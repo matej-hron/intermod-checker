@@ -100,9 +100,11 @@ degenerate expressions such as `A + B − A` collapse to the vector for `B` befo
 evaluation, so no duplicate products can be emitted and no post-hoc
 deduplication is needed. Each distinct vector appears exactly once.
 
-Negation symmetry is handled by discarding products whose frequency is not
-positive: a vector and its negation produce `+f` and `−f`, so exactly one of the
-pair survives.
+Negation symmetry is handled by canonical enumeration: only vectors whose first
+non-zero coefficient is positive are generated, and the product frequency is
+taken as the absolute value of `Σ nᵢ·fᵢ`. Since a vector and its negation yield
+`+f` and `−f`, this emits exactly one of each pair and halves the search space.
+Products evaluating to exactly zero are discarded.
 
 ### 4.2 Product evaluation and hit matching
 
@@ -124,8 +126,12 @@ directly sit on. Setting `deviationKHz` to 0 disables that term.
 
 A match inside the window is a `Hit`, classified as:
 
-- **exact** — offset below a fixed 1 kHz epsilon,
-- **near** — inside the window but beyond the epsilon.
+- **exact** — offset of zero,
+- **near** — non-zero offset inside the window.
+
+All engine arithmetic is done in **integer kilohertz**, so products are computed
+exactly and no floating-point epsilon is needed anywhere. The UI converts
+between MHz and kHz at its boundary.
 
 Severity is derived from order: 3 = high, 5 = medium, 7 and above = low. When
 several products hit the same receiver, the lowest order wins for the summary
@@ -146,12 +152,15 @@ accepted when, with that single carrier replaced:
 2. it keeps at least `minSpacingKHz` from every other carrier,
 3. it introduces no hit at any order up to `highOrder`.
 
-The first accepted candidate is proposed. Suggestions are computed one carrier
-at a time against the current set; after the user applies any of them the full
-set is re-analyzed, so the displayed verdict always reflects the real
-configuration rather than an assumed one. When no candidate satisfies the
-constraints, the engine reports that explicitly for that carrier instead of
-returning the original frequency as if it were a fix.
+The first accepted candidate is proposed. Suggestions are computed sequentially
+against a working copy of the set: once a carrier's replacement is accepted it is
+applied to that working copy before the next conflicted carrier is processed, so
+the proposals are mutually consistent and applying all of them yields a clean
+set. After the user applies any suggestion the full set is re-analyzed, so the
+displayed verdict always reflects the real configuration rather than an assumed
+one. When no candidate satisfies the constraints within the candidate budget,
+the engine reports that explicitly for that carrier instead of returning the
+original frequency as if it were a fix.
 
 ### 4.4 Performance
 
@@ -162,6 +171,9 @@ order is on the order of millions of vectors. Mitigations:
 - The worker emits progress and honours a cancellation message.
 - Before running with `highOrder ≥ 7` the UI shows an estimated workload warning
   and requires confirmation.
+- Candidate evaluation during suggestion aborts on the first hit found, and the
+  candidate scan is capped at 2000 candidates per carrier so a hopeless search
+  terminates and reports failure rather than running unbounded.
 - Defaults are `lowOrder = 3`, `highOrder = 5`, odd-only enabled, which keeps the
   target case comfortably interactive.
 
