@@ -130,3 +130,12 @@ code {
 label { display: block; margin-bottom: 0.6rem; }
 button { margin-right: 0.5rem; }
 @media (max-width: 640px) { .app { padding: 0.75rem; } .freq-table th:nth-child(1) { display: none; } .freq-table td:nth-child(1) { display: none; } }
+.spectrum { position: relative; height: 64px; border: 1px solid #8884; border-radius: 4px; overflow: hidden; }
+.spectrum__product { position: absolute; bottom: 0; width: 1px; height: 35%; background: #8886; }
+.spectrum__product--high { background: #dd3333aa; height: 100%; width: 2px; }
+.spectrum__product--medium { background: #d98910aa; height: 65%; }
+.spectrum__product--low { background: #8888; height: 35%; }
+.spectrum__carrier { position: absolute; top: 0; width: 2px; height: 100%; background: #2a842a; }
+.spectrum__carrier--bad { background: #d33; width: 3px; border-left: 1px dashed #700; }
+.spectrum__scale { display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; }
+.conflict { margin-bottom: 0.5rem; }
