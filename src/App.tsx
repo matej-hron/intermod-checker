@@ -59,6 +59,17 @@ export default function App() {
       <SuggestionPanel />
       <SpectrumStrip />
       <ConflictList />
+
+      <footer className="panel hint">
+        <p>
+          This tool models intermodulation products arithmetically from the
+          frequencies you enter. It does not know your transmitter power,
+          antenna placement, receiver filtering, or any signal that is not in
+          your list, and it does not check licensing or broadcast allocations.
+          Treat its output as a planning aid, not a guarantee — always verify on
+          site before a performance.
+        </p>
+      </footer>
     </main>
   );
 }
