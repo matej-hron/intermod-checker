@@ -1,0 +1,145 @@
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
+
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+.app { max-width: 68rem; margin: 0 auto; padding: 1.5rem; }
+.panel { border: 1px solid #8884; border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem; }
+.panel h2 { margin-top: 0; font-size: 1.1rem; }
+.freq-table { width: 100%; border-collapse: collapse; }
+.freq-table th, .freq-table td { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 1px solid #8883; }
+.freq-table input { width: 100%; box-sizing: border-box; padding: 0.3rem; }
+.freq-input--invalid { outline: 2px solid #d33; }
+.row--invalid { background: #d3333318; }
+.badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.8rem; background: #8883; }
+.badge--bad { background: #d3333333; }
+.badge--good { background: #2a842a33; }
+.badge--high { background: #d3333344; }
+.badge--medium { background: #d9891044; }
+.badge--low { background: #8883; }
+.error { color: #d33; }
+.hint { color: #888; font-size: 0.85rem; }
+label { display: block; margin-bottom: 0.6rem; }
+button { margin-right: 0.5rem; }
+@media (max-width: 640px) { .app { padding: 0.75rem; } .freq-table th:nth-child(1) { display: none; } .freq-table td:nth-child(1) { display: none; } }
+.spectrum { position: relative; height: 64px; border: 1px solid #8884; border-radius: 4px; overflow: hidden; }
+/* Markers are centred on their frequency, so the track is inset by half the
+   widest marker to keep one sitting exactly on a band edge fully visible. */
+.spectrum__track { position: absolute; inset: 0 2px; }
+.spectrum__product, .spectrum__carrier { transform: translateX(-50%); }
+.spectrum__product { position: absolute; bottom: 0; width: 1px; height: 35%; background: #8886; }
+.spectrum__product--high { background: #dd3333aa; height: 100%; width: 2px; }
+.spectrum__product--medium { background: #d98910aa; height: 65%; }
+.spectrum__product--low { background: #8888; height: 35%; }
+.spectrum__carrier { position: absolute; top: 0; width: 2px; height: 100%; background: #2a842a; }
+.spectrum__carrier--bad { background: #d33; width: 3px; border-left: 1px dashed #700; }
+.spectrum__scale { display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; }
+.conflict { margin-bottom: 0.5rem; }
