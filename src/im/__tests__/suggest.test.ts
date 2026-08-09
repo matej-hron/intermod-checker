@@ -119,4 +119,18 @@ describe('suggest', () => {
     );
     expect(fractions[fractions.length - 1]).toBe(1);
   });
+
+  it('picks the nearest clean candidate, trying below before above', () => {
+    // a=510, b=511, c=509 with 3rd order only, 25 kHz steps.
+    // For b: 510.975 and 511.025 are both unclean, so the search widens to
+    // 50 kHz and takes the BELOW candidate first -> 510.950, never 511.050.
+    // For c: 508.975 is clean at the very first step -> never 509.025.
+    const carriers = [carrier('a', 510), carrier('b', 511), carrier('c', 509)];
+    const byId = new Map(suggest(carriers, settings).map((s) => [s.carrierId, s]));
+
+    expect(byId.get('b')?.toKHz).toBe(510950);
+    expect(byId.get('b')?.distanceKHz).toBe(50);
+    expect(byId.get('c')?.toKHz).toBe(508975);
+    expect(byId.get('c')?.distanceKHz).toBe(25);
+  });
 });
