@@ -6,3 +6,4 @@ export * from './format';
 export * from './analyze';
 export * from './validate';
 export * from './suggest';
+export * from './project';
