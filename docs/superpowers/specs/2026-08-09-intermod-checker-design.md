@@ -43,7 +43,8 @@ interfere.
 
 - External occupancy data (TV channels, local transmitters, location databases).
 - Device model presets with tuning ranges and channel steps. Device identity is
-  metadata only.
+  metadata only in v1; a preset catalogue is planned as follow-up work (see
+  section 8).
 - Accounts, server-side storage, and any backend at all.
 - Generating a complete frequency plan from scratch.
 
@@ -224,7 +225,22 @@ set re-analyzes with zero hits or reports its failure explicitly.
 
 The static gate is `tsc --noEmit` plus `vitest run`.
 
-## 8. Disclaimer
+## 8. Future work
+
+Device model presets are the expected next step: a built-in catalogue of
+microphone models, each carrying its tuning range, channel step, and deviation,
+so selecting a model constrains the valid frequencies for that row and feeds a
+per-carrier deviation into the window calculation instead of the single global
+setting.
+
+To keep that migration cheap, v1 already stores each carrier as an object with
+an optional free-text `label`. The catalogue lands as an added optional
+`modelId` field on the same object plus a lookup table; existing saved projects
+stay valid, and the analysis engine only needs deviation to become per-carrier
+rather than global. Nothing in the v1 design should assume the label is the only
+device-related field a carrier will ever have.
+
+## 9. Disclaimer
 
 The tool is a planning aid. It models intermodulation arithmetic only; it does
 not account for site-specific nonlinearities, antenna placement, filtering,
