@@ -20,6 +20,42 @@ function isCarrier(value: unknown): value is Carrier {
   );
 }
 
+const SETTINGS_NUMERIC_KEYS = [
+  'bandMinKHz',
+  'bandMaxKHz',
+  'lowOrder',
+  'highOrder',
+  'nearHitWindowKHz',
+  'deviationKHz',
+  'minSpacingKHz',
+  'suggestionStepKHz',
+] as const satisfies readonly (keyof Settings)[];
+
+function isSettings(value: unknown): value is Settings {
+  if (typeof value !== 'object' || value === null) return false;
+  const s = value as Record<string, unknown>;
+  if (typeof s.oddOnly !== 'boolean') return false;
+  return SETTINGS_NUMERIC_KEYS.every(
+    (key) => typeof s[key] === 'number' && Number.isFinite(s[key]),
+  );
+}
+
+// A hand-edited file can carry a string where a number belongs. JavaScript
+// compares those loosely rather than throwing, so an unchecked value would slip
+// past validation and reach the engine's arithmetic as NaN. Drop any field that
+// is not a finite number and fall back to the default.
+function sanitizeSettings(raw: unknown): Settings {
+  if (typeof raw !== 'object' || raw === null) return { ...DEFAULT_SETTINGS };
+  const s = raw as Record<string, unknown>;
+  const out: Settings = { ...DEFAULT_SETTINGS };
+  for (const key of SETTINGS_NUMERIC_KEYS) {
+    const v = s[key];
+    if (typeof v === 'number' && Number.isFinite(v)) out[key] = v;
+  }
+  if (typeof s.oddOnly === 'boolean') out.oddOnly = s.oddOnly;
+  return out;
+}
+
 export function isProjectFile(value: unknown): value is ProjectFile {
   if (typeof value !== 'object' || value === null) return false;
   const c = value as Record<string, unknown>;
@@ -28,8 +64,7 @@ export function isProjectFile(value: unknown): value is ProjectFile {
     typeof c.name === 'string' &&
     Array.isArray(c.carriers) &&
     c.carriers.every(isCarrier) &&
-    typeof c.settings === 'object' &&
-    c.settings !== null
+    isSettings(c.settings)
   );
 }
 
@@ -72,15 +107,20 @@ export function parseProject(json: string): ProjectFile | { error: string } {
     return { error: 'The project contains no readable frequency list.' };
   }
 
-  const settingsRaw =
-    typeof candidate.settings === 'object' && candidate.settings !== null
-      ? (candidate.settings as Partial<Settings>)
-      : {};
+  // Carrier ids key the per-carrier hit map in the engine, so a repeat would
+  // silently discard one carrier's results rather than fail loudly.
+  const ids = new Set<string>();
+  for (const c of candidate.carriers) {
+    if (ids.has(c.id)) {
+      return { error: 'The project contains duplicate frequency identifiers.' };
+    }
+    ids.add(c.id);
+  }
 
   return {
     version: candidate.version,
     name: typeof candidate.name === 'string' ? candidate.name : 'Untitled',
     carriers: candidate.carriers,
-    settings: { ...DEFAULT_SETTINGS, ...settingsRaw },
+    settings: sanitizeSettings(candidate.settings),
   };
 }

@@ -70,6 +70,22 @@ export function validate(
     });
   }
 
+  // analyze() keys its per-carrier hit map by id, so a repeated id would
+  // silently discard one carrier's results instead of failing loudly.
+  const seenIds = new Set<string>();
+  const reportedDuplicateIds = new Set<string>();
+  for (const c of carriers) {
+    if (seenIds.has(c.id) && !reportedDuplicateIds.has(c.id)) {
+      reportedDuplicateIds.add(c.id);
+      issues.push({
+        field: 'carriers',
+        message: 'Two entries share the same identifier.',
+        carrierIds: [c.id],
+      });
+    }
+    seenIds.add(c.id);
+  }
+
   for (const c of carriers) {
     if (!Number.isInteger(c.freqKHz)) {
       issues.push({

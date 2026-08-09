@@ -120,4 +120,12 @@ describe('validate', () => {
     const carriers = [carrier('a', 510), carrier('b', 510 + gapMHz)];
     expect(validate(carriers, DEFAULT_SETTINGS)).toEqual([]);
   });
+
+  it('rejects two carriers sharing an identifier', () => {
+    const issues = validate(
+      [carrier('same', 510), { id: 'same', label: 'b', freqKHz: 530000 }],
+      DEFAULT_SETTINGS,
+    );
+    expect(issues.some((i) => /identifier/i.test(i.message))).toBe(true);
+  });
 });

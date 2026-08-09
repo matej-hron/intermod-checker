@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { serializeProject, parseProject, PROJECT_VERSION } from '../project';
+import { serializeProject, parseProject, isProjectFile, PROJECT_VERSION } from '../project';
 import { DEFAULT_SETTINGS, type Carrier } from '../types';
 
 const carriers: Carrier[] = [
@@ -54,5 +54,40 @@ describe('project files', () => {
     if ('error' in parsed) return;
     expect(parsed.settings.bandMinKHz).toBe(470000);
     expect(parsed.settings.highOrder).toBe(DEFAULT_SETTINGS.highOrder);
+  });
+
+  it('rejects a file with duplicate carrier identifiers', () => {
+    const json = JSON.stringify({
+      version: 1,
+      name: 'p',
+      carriers: [
+        { id: 'x', label: 'a', freqKHz: 510000 },
+        { id: 'x', label: 'b', freqKHz: 530000 },
+      ],
+      settings: DEFAULT_SETTINGS,
+    });
+    const parsed = parseProject(json);
+    expect('error' in parsed).toBe(true);
+  });
+
+  it('replaces non-numeric settings with the defaults', () => {
+    const json = JSON.stringify({
+      version: 1,
+      name: 'p',
+      carriers: [
+        { id: 'a', label: 'a', freqKHz: 510000 },
+        { id: 'b', label: 'b', freqKHz: 530000 },
+      ],
+      settings: { ...DEFAULT_SETTINGS, bandMinKHz: 'not-a-number', oddOnly: 'yes' },
+    });
+    const parsed = parseProject(json);
+    expect('error' in parsed).toBe(false);
+    if ('error' in parsed) return;
+    expect(parsed.settings.bandMinKHz).toBe(DEFAULT_SETTINGS.bandMinKHz);
+    expect(parsed.settings.oddOnly).toBe(DEFAULT_SETTINGS.oddOnly);
+  });
+
+  it('does not treat a mistyped settings object as a project file', () => {
+    expect(isProjectFile({ version: 1, name: 'p', carriers: [], settings: {} })).toBe(false);
   });
 });

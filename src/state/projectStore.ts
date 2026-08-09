@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import {
   DEFAULT_SETTINGS,
+  parseProject,
   type Carrier,
   type ProjectFile,
   type Settings,
@@ -35,19 +36,20 @@ function initialCarriers(): Carrier[] {
 }
 
 function loadFromStorage(): { name: string; carriers: Carrier[]; settings: Settings } | null {
+  let raw: string | null;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw === null) return null;
-    const parsed = JSON.parse(raw) as Partial<ProjectFile>;
-    if (!Array.isArray(parsed.carriers)) return null;
-    return {
-      name: typeof parsed.name === 'string' ? parsed.name : 'Untitled',
-      carriers: parsed.carriers,
-      settings: { ...DEFAULT_SETTINGS, ...(parsed.settings ?? {}) },
-    };
+    raw = localStorage.getItem(STORAGE_KEY);
   } catch {
     return null;
   }
+  if (raw === null) return null;
+
+  // Restored storage is as untrusted as an imported file: it can be a partial
+  // write or a schema from an older build. Reuse the same parser so both paths
+  // enforce identical guarantees.
+  const parsed = parseProject(raw);
+  if ('error' in parsed) return null;
+  return { name: parsed.name, carriers: parsed.carriers, settings: parsed.settings };
 }
 
 const restored = typeof localStorage === 'undefined' ? null : loadFromStorage();
