@@ -155,12 +155,14 @@ accepted when, with that single carrier replaced:
 The first accepted candidate is proposed. Suggestions are computed sequentially
 against a working copy of the set: once a carrier's replacement is accepted it is
 applied to that working copy before the next conflicted carrier is processed, so
-the proposals are mutually consistent and applying all of them yields a clean
-set. After the user applies any suggestion the full set is re-analyzed, so the
-displayed verdict always reflects the real configuration rather than an assumed
-one. When no candidate satisfies the constraints within the candidate budget,
-the engine reports that explicitly for that carrier instead of returning the
-original frequency as if it were a fix.
+each proposal is clean with respect to the carriers already placed. This does
+**not** guarantee that applying every proposal yields a conflict-free set: on a
+congested band a later carrier may have no available frequency at all, and the
+applied result can still contain conflicts. After the user applies any
+suggestion the full set is re-analyzed, so the displayed verdict always reflects
+the real configuration rather than an assumed one. When no candidate satisfies
+the constraints within the candidate budget, the engine reports that explicitly
+for that carrier instead of returning the original frequency as if it were a fix.
 
 ### 4.4 Performance
 
