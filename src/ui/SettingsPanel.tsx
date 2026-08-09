@@ -1,37 +1,31 @@
-import { DEFAULT_SETTINGS, kHzToMHzText, mhzToKHz, parseFrequencyMHz } from '../im';
+import { DEFAULT_SETTINGS } from '../im';
 import { useProjectStore } from '../state/projectStore';
+import { MHzInput } from './MHzInput';
 
 export function SettingsPanel() {
   const settings = useProjectStore((s) => s.settings);
   const setSettings = useProjectStore((s) => s.setSettings);
   const resetSettings = useProjectStore((s) => s.resetSettings);
 
-  const commitMHz = (text: string, key: 'bandMinKHz' | 'bandMaxKHz'): void => {
-    const parsed = parseFrequencyMHz(text);
-    if (parsed === null) return;
-    const khz = mhzToKHz(parsed);
-    setSettings(key === 'bandMinKHz' ? { bandMinKHz: khz } : { bandMaxKHz: khz });
-  };
-
   return (
     <section className="panel">
       <h2>Analysis settings</h2>
 
-      <label>
-        Band start (MHz)
-        <input
-          defaultValue={kHzToMHzText(settings.bandMinKHz)}
-          onBlur={(e) => commitMHz(e.target.value, 'bandMinKHz')}
-        />
-      </label>
+      <label htmlFor="band-start">Band start (MHz)</label>
+      <MHzInput
+        id="band-start"
+        label="Band start in megahertz"
+        valueKHz={settings.bandMinKHz}
+        onCommit={(bandMinKHz) => setSettings({ bandMinKHz })}
+      />
 
-      <label>
-        Band end (MHz)
-        <input
-          defaultValue={kHzToMHzText(settings.bandMaxKHz)}
-          onBlur={(e) => commitMHz(e.target.value, 'bandMaxKHz')}
-        />
-      </label>
+      <label htmlFor="band-end">Band end (MHz)</label>
+      <MHzInput
+        id="band-end"
+        label="Band end in megahertz"
+        valueKHz={settings.bandMaxKHz}
+        onCommit={(bandMaxKHz) => setSettings({ bandMaxKHz })}
+      />
 
       <label>
         Lowest order

@@ -1,45 +1,7 @@
-import { useState } from 'react';
-import { kHzToMHzText, mhzToKHz, parseFrequencyMHz, MAX_CARRIERS } from '../im';
+import { MAX_CARRIERS } from '../im';
 import { useProjectStore } from '../state/projectStore';
 import { useAnalysisStore } from '../state/analysisStore';
-
-function FrequencyInput({
-  id,
-  freqKHz,
-  onCommit,
-}: {
-  id: string;
-  freqKHz: number;
-  onCommit: (khz: number) => void;
-}) {
-  const [draft, setDraft] = useState<string | null>(null);
-  const [invalid, setInvalid] = useState(false);
-  const value = draft ?? kHzToMHzText(freqKHz);
-
-  return (
-    <input
-      className={invalid ? 'freq-input freq-input--invalid' : 'freq-input'}
-      inputMode="decimal"
-      aria-label={`Frequency for ${id} in megahertz`}
-      value={value}
-      onChange={(e) => {
-        setDraft(e.target.value);
-        setInvalid(false);
-      }}
-      onBlur={() => {
-        if (draft === null) return;
-        const parsed = parseFrequencyMHz(draft);
-        if (parsed === null) {
-          setInvalid(true);
-          return;
-        }
-        onCommit(mhzToKHz(parsed));
-        setDraft(null);
-        setInvalid(false);
-      }}
-    />
-  );
-}
+import { MHzInput } from './MHzInput';
 
 export function FrequencyTable() {
   const carriers = useProjectStore((s) => s.carriers);
@@ -82,9 +44,9 @@ export function FrequencyTable() {
                 />
               </td>
               <td>
-                <FrequencyInput
-                  id={carrier.label}
-                  freqKHz={carrier.freqKHz}
+                <MHzInput
+                  label={`Frequency for ${carrier.label} in megahertz`}
+                  valueKHz={carrier.freqKHz}
                   onCommit={(khz) => updateCarrier(carrier.id, { freqKHz: khz })}
                 />
               </td>
