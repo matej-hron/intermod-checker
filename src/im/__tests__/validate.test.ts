@@ -83,4 +83,41 @@ describe('validate', () => {
     });
     expect(issues.some((i) => i.field === 'settings')).toBe(true);
   });
+
+  it('accepts exactly two carriers', () => {
+    expect(
+      validate([carrier('a', 510), carrier('b', 530)], DEFAULT_SETTINGS),
+    ).toEqual([]);
+  });
+
+  it('accepts exactly twenty-four carriers', () => {
+    const twentyFour = Array.from({ length: 24 }, (_, i) =>
+      carrier(`c${i}`, 510 + i * 2),
+    );
+    expect(validate(twentyFour, DEFAULT_SETTINGS)).toEqual([]);
+  });
+
+  it('accepts a frequency exactly at the band minimum', () => {
+    const carriers = [
+      carrier('a', DEFAULT_SETTINGS.bandMinKHz / 1000),
+      carrier('b', 530),
+      carrier('c', 560),
+    ];
+    expect(validate(carriers, DEFAULT_SETTINGS)).toEqual([]);
+  });
+
+  it('accepts a frequency exactly at the band maximum', () => {
+    const carriers = [
+      carrier('a', 510),
+      carrier('b', 530),
+      carrier('c', DEFAULT_SETTINGS.bandMaxKHz / 1000),
+    ];
+    expect(validate(carriers, DEFAULT_SETTINGS)).toEqual([]);
+  });
+
+  it('accepts a gap exactly equal to the minimum spacing', () => {
+    const gapMHz = DEFAULT_SETTINGS.minSpacingKHz / 1000;
+    const carriers = [carrier('a', 510), carrier('b', 510 + gapMHz)];
+    expect(validate(carriers, DEFAULT_SETTINGS)).toEqual([]);
+  });
 });

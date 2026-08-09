@@ -21,6 +21,10 @@ describe('severityForOrder', () => {
     expect(severityForOrder(7)).toBe('low');
     expect(severityForOrder(9)).toBe('low');
   });
+
+  it('ranks an even order the same as its odd neighbours', () => {
+    expect(severityForOrder(4)).toBe('medium');
+  });
 });
 
 describe('effectiveWindowKHz', () => {
@@ -132,6 +136,47 @@ describe('analyze', () => {
     );
     expect(hits[0]?.kind).toBe('near');
     expect(hits[0]?.offsetKHz).toBe(20);
+  });
+
+  it('treats an offset exactly at the window edge as a near hit', () => {
+    // The third-order product lands at 149.000 MHz; 149.025 is exactly
+    // nearHitWindowKHz (25 kHz) away, which must still count as a near hit.
+    const carriers = [
+      carrier('a', 150),
+      carrier('b', 151),
+      carrier('victim', 149.025),
+    ];
+    const result = analyze(carriers, {
+      ...vhf,
+      lowOrder: 3,
+      highOrder: 3,
+      nearHitWindowKHz: 25,
+    });
+    const hits = (result.hitsByCarrierId['victim'] ?? []).filter(
+      (h) => !h.selfInvolving,
+    );
+    expect(hits[0]?.kind).toBe('near');
+    expect(hits[0]?.offsetKHz).toBe(25);
+  });
+
+  it('ignores an offset one kHz beyond the window edge', () => {
+    // 149.026 is window + 1 kHz away from the 149.000 MHz product, so it must
+    // not be reported at all.
+    const carriers = [
+      carrier('a', 150),
+      carrier('b', 151),
+      carrier('victim', 149.026),
+    ];
+    const result = analyze(carriers, {
+      ...vhf,
+      lowOrder: 3,
+      highOrder: 3,
+      nearHitWindowKHz: 25,
+    });
+    const hits = (result.hitsByCarrierId['victim'] ?? []).filter(
+      (h) => !h.selfInvolving,
+    );
+    expect(hits).toHaveLength(0);
   });
 
   it('ignores an offset outside the window', () => {
