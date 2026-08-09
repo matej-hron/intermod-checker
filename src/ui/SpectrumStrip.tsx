@@ -27,6 +27,7 @@ export function SpectrumStrip() {
     <section className="panel">
       <h2>Spectrum</h2>
       <div className="spectrum" role="img" aria-label={chartLabel}>
+        <div className="spectrum__track">
         {products.map((hit, i) => (
           <span
             key={`p-${i}`}
@@ -47,6 +48,7 @@ export function SpectrumStrip() {
             title={`${carrier.label} — ${kHzToMHzText(carrier.freqKHz)} MHz${conflicted.has(carrier.id) ? ' (conflict)' : ''}`}
           />
         ))}
+        </div>
       </div>
       <div className="spectrum__scale">
         <span>{kHzToMHzText(settings.bandMinKHz)} MHz</span>

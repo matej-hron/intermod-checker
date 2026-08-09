@@ -131,6 +131,10 @@ label { display: block; margin-bottom: 0.6rem; }
 button { margin-right: 0.5rem; }
 @media (max-width: 640px) { .app { padding: 0.75rem; } .freq-table th:nth-child(1) { display: none; } .freq-table td:nth-child(1) { display: none; } }
 .spectrum { position: relative; height: 64px; border: 1px solid #8884; border-radius: 4px; overflow: hidden; }
+/* Markers are centred on their frequency, so the track is inset by half the
+   widest marker to keep one sitting exactly on a band edge fully visible. */
+.spectrum__track { position: absolute; inset: 0 2px; }
+.spectrum__product, .spectrum__carrier { transform: translateX(-50%); }
 .spectrum__product { position: absolute; bottom: 0; width: 1px; height: 35%; background: #8886; }
 .spectrum__product--high { background: #dd3333aa; height: 100%; width: 2px; }
 .spectrum__product--medium { background: #d98910aa; height: 65%; }
