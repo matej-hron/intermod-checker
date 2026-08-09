@@ -3,6 +3,8 @@ import { SettingsPanel } from './ui/SettingsPanel';
 import { ResultsSummary } from './ui/ResultsSummary';
 import { ConflictList } from './ui/ConflictList';
 import { SpectrumStrip } from './ui/SpectrumStrip';
+import { SuggestionPanel } from './ui/SuggestionPanel';
+import { ProjectBar } from './ui/ProjectBar';
 import { useProjectStore } from './state/projectStore';
 import { useAnalysisStore } from './state/analysisStore';
 
@@ -19,6 +21,7 @@ export default function App() {
   return (
     <main className="app">
       <h1>Intermodulation Checker</h1>
+      <ProjectBar />
       <FrequencyTable />
       <SettingsPanel />
 
@@ -53,6 +56,7 @@ export default function App() {
       </section>
 
       <ResultsSummary />
+      <SuggestionPanel />
       <SpectrumStrip />
       <ConflictList />
     </main>

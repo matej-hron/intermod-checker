@@ -22,6 +22,7 @@ interface ProjectState {
   resetSettings: () => void;
   loadProject: (file: ProjectFile) => void;
   applySuggestions: (suggestions: Suggestion[]) => void;
+  newProject: () => void;
 }
 
 function newId(): string {
@@ -113,6 +114,13 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         name: file.name,
         carriers: file.carriers,
         settings: file.settings,
+      }),
+
+    newProject: () =>
+      update({
+        name: 'Untitled',
+        carriers: initialCarriers(),
+        settings: DEFAULT_SETTINGS,
       }),
 
     applySuggestions: (suggestions) => {
