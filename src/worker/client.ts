@@ -34,6 +34,12 @@ export class AnalysisInvalidError extends Error {
   }
 }
 
+function detach(worker: Worker): void {
+  worker.onmessage = null;
+  worker.onerror = null;
+  worker.onmessageerror = null;
+}
+
 function createWorker(): Worker {
   return new Worker(new URL('./analysis.worker.ts', import.meta.url), {
     type: 'module',
@@ -60,6 +66,15 @@ export class AnalysisClient {
     return new Promise<WorkerRunResult>((resolve, reject) => {
       this.rejectActive = reject;
 
+      // Called on every settling path so a terminated worker can never deliver
+      // a late progress tick to a caller that has already moved on.
+      const finish = () => {
+        detach(worker);
+        worker.terminate();
+        if (this.worker === worker) this.worker = null;
+        this.rejectActive = null;
+      };
+
       worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
         const message = event.data;
         if (message.runId !== runId) return;
@@ -69,23 +84,28 @@ export class AnalysisClient {
             onProgress({ phase: message.phase, fraction: message.fraction });
             break;
           case 'done':
-            this.rejectActive = null;
+            finish();
             resolve({ result: message.result, suggestions: message.suggestions });
             break;
           case 'invalid':
-            this.rejectActive = null;
+            finish();
             reject(new AnalysisInvalidError(message.issues));
             break;
           case 'error':
-            this.rejectActive = null;
+            finish();
             reject(new Error(message.message));
             break;
         }
       };
 
       worker.onerror = () => {
-        this.rejectActive = null;
+        finish();
         reject(new Error('The analysis worker failed to start.'));
+      };
+
+      worker.onmessageerror = () => {
+        finish();
+        reject(new Error('The analysis worker sent a message that could not be read.'));
       };
 
       worker.postMessage({ type: 'run', runId, carriers, settings });
@@ -94,6 +114,7 @@ export class AnalysisClient {
 
   cancel(): void {
     if (this.worker === null) return;
+    detach(this.worker);
     this.worker.terminate();
     this.worker = null;
     this.rejectActive?.(new AnalysisCancelledError());
