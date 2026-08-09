@@ -23,7 +23,10 @@ replacement frequencies when they do.
   window, and ranks it by severity — third order is the most serious, then
   fifth, then seventh and above.
 - Proposes a replacement frequency for each conflicted carrier, one at a time,
-  so that applying every suggestion in order produces a conflict-free set.
+  each calculated with the previous replacements already applied. Applying them
+  all clears the conflicts that were found; a carrier for which no clean
+  frequency exists is reported as such and left alone, so re-run the analysis
+  to confirm the final set.
 - Runs the whole search on a background worker, so a 12-carrier scan does not
   freeze the page.
 - Saves your project to `localStorage` automatically, and can export it to or
@@ -75,7 +78,7 @@ npm run typecheck  # tsc -b --noEmit
 | `bandMinKHz` | `500000` | Lower edge of the band, in kHz (500 MHz). |
 | `bandMaxKHz` | `700000` | Upper edge of the band, in kHz (700 MHz). |
 | `lowOrder` | `3` | Lowest IM order to search. |
-| `highOrder` | `5` | Highest IM order to search. |
+| `highOrder` | `5` | Highest IM order to search (maximum 9). |
 | `oddOnly` | `true` | Only consider odd-order products (the practically significant ones). |
 | `nearHitWindowKHz` | `25` | Base match window around a carrier, in kHz. |
 | `deviationKHz` | `0` | Per-carrier FM deviation assumption, in kHz; widens the match window by `order × deviationKHz`. |

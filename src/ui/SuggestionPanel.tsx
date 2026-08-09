@@ -21,7 +21,9 @@ export function SuggestionPanel() {
       <h2>Suggested changes</h2>
       <p className="hint">
         Each suggestion is calculated with the previous ones already applied, so
-        applying them all yields an interference-free set.
+        applying them all clears the conflicts listed here. Run the analysis
+        again afterwards to confirm — and note that any carrier shown below
+        without a replacement is left where it is.
       </p>
       <ul>
         {suggestions.map((suggestion) => (
