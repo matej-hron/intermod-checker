@@ -51,6 +51,7 @@ export function ProjectBar() {
             )
           ) {
             newProject();
+            setImportError(null);
             clear();
           }
         }}
