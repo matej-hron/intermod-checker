@@ -561,12 +561,17 @@ Copilot-Session: f68abad6-3aab-47c2-8f07-f42d1ba8022f"
 ### Task 4: Analysis engine
 
 **Files:**
+- Create: `src/im/products.ts`
 - Create: `src/im/analyze.ts`
 - Test: `src/im/__tests__/analyze.test.ts`
 
 **Interfaces:**
 - Consumes: `enumerateVectors` (Task 2); `Carrier`, `Settings`, `Product`, `Hit`, `Severity`, `AnalysisResult` (Task 1).
-- Produces: `severityForOrder(order: number): Severity`, `effectiveWindowKHz(order: number, settings: Settings): number`, and `analyze(carriers: readonly Carrier[], settings: Settings, onProgress?: (fraction: number) => void): AnalysisResult` from `src/im/analyze.ts`.
+- Produces:
+  - `src/im/products.ts`: `scanProducts(freqs: readonly number[], settings: Settings, visit: (freqKHz: number, coeffs: readonly number[], order: number) => boolean | void, onVector?: (enumerated: number) => void): number`. Walks every canonical vector, computes `|Σ nᵢ · fᵢ|`, discards zero sums and out-of-band products, and calls `visit` with each surviving product. `onVector` fires once per enumerated vector and exists so callers can report progress. `coeffs` is the reused enumeration array — copy it to retain it. Returning `false` from `visit` aborts the scan. Returns the number of vectors enumerated.
+  - `src/im/analyze.ts`: `severityForOrder(order: number): Severity`, `effectiveWindowKHz(order: number, settings: Settings): number`, `analyze(carriers: readonly Carrier[], settings: Settings, onProgress?: (fraction: number) => void): AnalysisResult`.
+
+`scanProducts` exists because Task 6's candidate search needs exactly the same enumerate-sum-filter walk that `analyze` needs. Writing that loop twice would mean two places to fix when the product rule changes, so it lives in one file and both callers pass a visitor.
 
 Rules from spec section 4.2:
 
@@ -813,12 +818,65 @@ describe('analyze', () => {
 Run: `npx vitest run src/im/__tests__/analyze.test.ts`
 Expected: FAIL — cannot resolve `../analyze`.
 
-- [ ] **Step 3: Write the implementation**
+- [ ] **Step 3: Write the shared product scan**
+
+Create `src/im/products.ts`:
+
+```ts
+import { enumerateVectors } from './enumerate';
+import type { Settings } from './types';
+
+export type ProductVisitor = (
+  freqKHz: number,
+  coeffs: readonly number[],
+  order: number,
+) => boolean | void;
+
+/**
+ * Walks every canonical vector, evaluates it against `freqs`, and reports each
+ * product that lands inside the band.
+ *
+ * The `coeffs` array is reused between calls — copy it to retain it. Returning
+ * `false` from `visit` aborts the scan. Returns the vectors enumerated.
+ */
+export function scanProducts(
+  freqs: readonly number[],
+  settings: Settings,
+  visit: ProductVisitor,
+  onVector?: (enumerated: number) => void,
+): number {
+  const n = freqs.length;
+  let enumerated = 0;
+
+  return enumerateVectors(
+    n,
+    settings.lowOrder,
+    settings.highOrder,
+    settings.oddOnly,
+    (coeffs, order) => {
+      enumerated += 1;
+      onVector?.(enumerated);
+
+      let sum = 0;
+      for (let i = 0; i < n; i += 1) sum += coeffs[i] * freqs[i];
+      if (sum === 0) return;
+
+      const freqKHz = Math.abs(sum);
+      if (freqKHz < settings.bandMinKHz || freqKHz > settings.bandMaxKHz) return;
+
+      return visit(freqKHz, coeffs, order);
+    },
+  );
+}
+```
+
+- [ ] **Step 4: Write the analysis engine**
 
 Create `src/im/analyze.ts`:
 
 ```ts
 import { enumerateVectors } from './enumerate';
+import { scanProducts } from './products';
 import type {
   AnalysisResult,
   Carrier,
@@ -851,8 +909,6 @@ export function analyze(
   const hitsByCarrierId: Record<string, Hit[]> = {};
   for (const c of carriers) hitsByCarrierId[c.id] = [];
 
-  let examined = 0;
-
   // A counting pass with an empty visitor is far cheaper than the evaluation
   // pass, and it gives an exact denominator for honest progress reporting.
   const total =
@@ -866,24 +922,10 @@ export function analyze(
           () => {},
         );
 
-  const vectorsExamined = enumerateVectors(
-    n,
-    settings.lowOrder,
-    settings.highOrder,
-    settings.oddOnly,
-    (coeffs, order) => {
-      examined += 1;
-      if (onProgress && total > 0 && examined % PROGRESS_INTERVAL === 0) {
-        onProgress(examined / total);
-      }
-
-      let sum = 0;
-      for (let i = 0; i < n; i += 1) sum += coeffs[i] * freqs[i];
-      if (sum === 0) return;
-
-      const freqKHz = Math.abs(sum);
-      if (freqKHz < settings.bandMinKHz || freqKHz > settings.bandMaxKHz) return;
-
+  const vectorsExamined = scanProducts(
+    freqs,
+    settings,
+    (freqKHz, coeffs, order) => {
       const window = effectiveWindowKHz(order, settings);
       let product: Product | null = null;
 
@@ -893,6 +935,8 @@ export function analyze(
 
         if (product === null) {
           // Normalise so the stored coefficients produce the positive frequency.
+          let sum = 0;
+          for (let i = 0; i < n; i += 1) sum += coeffs[i] * freqs[i];
           const stored = sum < 0 ? coeffs.map((c) => -c) : [...coeffs];
           product = { coeffs: stored, order, freqKHz };
         }
@@ -909,6 +953,11 @@ export function analyze(
         hitsByCarrierId[carriers[v].id].push(hit);
       }
     },
+    (enumerated) => {
+      if (onProgress && total > 0 && enumerated % PROGRESS_INTERVAL === 0) {
+        onProgress(enumerated / total);
+      }
+    },
   );
 
   const conflictedIds = carriers
@@ -921,15 +970,20 @@ export function analyze(
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+`scanProducts` reports each enumerated vector through its `onVector` callback,
+so progress is measured against the same denominator the counting pass
+produced — the work actually being done, not just the products that survived
+the band filter.
+
+- [ ] **Step 5: Run the test to verify it passes**
 
 Run: `npx vitest run src/im/__tests__/analyze.test.ts && npx tsc --noEmit`
 Expected: PASS, no type errors.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add src/im/analyze.ts src/im/__tests__/analyze.test.ts
+git add src/im/products.ts src/im/analyze.ts src/im/__tests__/analyze.test.ts
 git commit -m "feat(im): evaluate intermodulation products against receivers
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
@@ -1192,7 +1246,7 @@ Copilot-Session: f68abad6-3aab-47c2-8f07-f42d1ba8022f"
 - Test: `src/im/__tests__/suggest.test.ts`
 
 **Interfaces:**
-- Consumes: `analyze`, `effectiveWindowKHz` (Task 4); `enumerateVectors` (Task 2); `Carrier`, `Settings`, `Suggestion` (Task 1).
+- Consumes: `analyze`, `effectiveWindowKHz`, `scanProducts` (Task 4); `Carrier`, `Settings`, `Suggestion` (Task 1).
 - Produces: `suggest(carriers: readonly Carrier[], settings: Settings, onProgress?: (fraction: number) => void): Suggestion[]` from `src/im/suggest.ts`, and re-exports of the whole engine from `src/im/index.ts`.
 
 Algorithm, from spec sections 4.3 and 4.4:
@@ -1344,7 +1398,7 @@ Create `src/im/suggest.ts`:
 
 ```ts
 import { analyze, effectiveWindowKHz } from './analyze';
-import { enumerateVectors } from './enumerate';
+import { scanProducts } from './products';
 import type { Carrier, Settings, Suggestion } from './types';
 
 export const MAX_CANDIDATES = 2000;
@@ -1352,6 +1406,10 @@ export const MAX_CANDIDATES = 2000;
 /**
  * True when `candidateKHz` for `index` produces no qualifying hit against the
  * rest of the working set. Aborts on the first hit found.
+ *
+ * Self-involving products are ignored here for the same reason `analyze` keeps
+ * them out of `conflictedIds`: a product a carrier contributes to is its own
+ * self-mixing, not a reason to reject an otherwise clean frequency.
  */
 function isCandidateClean(
   freqs: number[],
@@ -1363,31 +1421,16 @@ function isCandidateClean(
   freqs[index] = candidateKHz;
   let clean = true;
 
-  enumerateVectors(
-    freqs.length,
-    settings.lowOrder,
-    settings.highOrder,
-    settings.oddOnly,
-    (coeffs, order) => {
-      let sum = 0;
-      for (let i = 0; i < freqs.length; i += 1) sum += coeffs[i] * freqs[i];
-      if (sum === 0) return;
-
-      const productKHz = Math.abs(sum);
-      if (productKHz < settings.bandMinKHz || productKHz > settings.bandMaxKHz) {
-        return;
+  scanProducts(freqs, settings, (productKHz, coeffs, order) => {
+    const window = effectiveWindowKHz(order, settings);
+    for (let v = 0; v < freqs.length; v += 1) {
+      if (coeffs[v] !== 0) continue;
+      if (Math.abs(freqs[v] - productKHz) <= window) {
+        clean = false;
+        return false;
       }
-
-      const window = effectiveWindowKHz(order, settings);
-      for (let v = 0; v < freqs.length; v += 1) {
-        if (coeffs[v] !== 0) continue; // self-involving products are ignored
-        if (Math.abs(freqs[v] - productKHz) <= window) {
-          clean = false;
-          return false;
-        }
-      }
-    },
-  );
+    }
+  });
 
   freqs[index] = original;
   return clean;
@@ -1479,6 +1522,7 @@ Create `src/im/index.ts`:
 export * from './types';
 export * from './units';
 export * from './enumerate';
+export * from './products';
 export * from './format';
 export * from './analyze';
 export * from './validate';
