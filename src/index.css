@@ -109,3 +109,24 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+.app { max-width: 68rem; margin: 0 auto; padding: 1.5rem; }
+.panel { border: 1px solid #8884; border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem; }
+.panel h2 { margin-top: 0; font-size: 1.1rem; }
+.freq-table { width: 100%; border-collapse: collapse; }
+.freq-table th, .freq-table td { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 1px solid #8883; }
+.freq-table input { width: 100%; box-sizing: border-box; padding: 0.3rem; }
+.freq-input--invalid { outline: 2px solid #d33; }
+.row--invalid { background: #d3333318; }
+.badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.8rem; background: #8883; }
+.badge--bad { background: #d3333333; }
+.badge--good { background: #2a842a33; }
+.badge--high { background: #d3333344; }
+.badge--medium { background: #d9891044; }
+.badge--low { background: #8883; }
+.error { color: #d33; }
+.hint { color: #888; font-size: 0.85rem; }
+label { display: block; margin-bottom: 0.6rem; }
+button { margin-right: 0.5rem; }
+@media (max-width: 640px) { .app { padding: 0.75rem; } .freq-table th:nth-child(1) { display: none; } .freq-table td:nth-child(1) { display: none; } }
