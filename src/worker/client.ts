@@ -120,8 +120,4 @@ export class AnalysisClient {
     this.rejectActive?.(new AnalysisCancelledError());
     this.rejectActive = null;
   }
-
-  dispose(): void {
-    this.cancel();
-  }
 }

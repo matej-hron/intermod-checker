@@ -1,4 +1,5 @@
 import {
+  MAX_ORDER,
   MAX_CARRIERS,
   MIN_CARRIERS,
   type Carrier,
@@ -23,6 +24,22 @@ export function validate(
     issues.push({
       field: 'settings',
       message: 'The lowest order must be at least 2.',
+      carrierIds: [],
+    });
+  }
+  if (!Number.isInteger(settings.lowOrder) || !Number.isInteger(settings.highOrder)) {
+    issues.push({
+      field: 'settings',
+      message: 'The orders must be whole numbers.',
+      carrierIds: [],
+    });
+  }
+  // Nothing else bounds highOrder, and enumeration cost explodes with it, so an
+  // imported or hand-edited value has to be caught before it reaches the engine.
+  if (settings.highOrder > MAX_ORDER) {
+    issues.push({
+      field: 'settings',
+      message: `The highest order must not exceed ${MAX_ORDER}.`,
       carrierIds: [],
     });
   }

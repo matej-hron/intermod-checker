@@ -31,15 +31,6 @@ const SETTINGS_NUMERIC_KEYS = [
   'suggestionStepKHz',
 ] as const satisfies readonly (keyof Settings)[];
 
-function isSettings(value: unknown): value is Settings {
-  if (typeof value !== 'object' || value === null) return false;
-  const s = value as Record<string, unknown>;
-  if (typeof s.oddOnly !== 'boolean') return false;
-  return SETTINGS_NUMERIC_KEYS.every(
-    (key) => typeof s[key] === 'number' && Number.isFinite(s[key]),
-  );
-}
-
 // A hand-edited file can carry a string where a number belongs. JavaScript
 // compares those loosely rather than throwing, so an unchecked value would slip
 // past validation and reach the engine's arithmetic as NaN. Drop any field that
@@ -54,18 +45,6 @@ function sanitizeSettings(raw: unknown): Settings {
   }
   if (typeof s.oddOnly === 'boolean') out.oddOnly = s.oddOnly;
   return out;
-}
-
-export function isProjectFile(value: unknown): value is ProjectFile {
-  if (typeof value !== 'object' || value === null) return false;
-  const c = value as Record<string, unknown>;
-  return (
-    typeof c.version === 'number' &&
-    typeof c.name === 'string' &&
-    Array.isArray(c.carriers) &&
-    c.carriers.every(isCarrier) &&
-    isSettings(c.settings)
-  );
 }
 
 export function serializeProject(

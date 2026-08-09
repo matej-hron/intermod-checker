@@ -2,6 +2,15 @@ import { DEFAULT_SETTINGS } from '../im';
 import { useProjectStore } from '../state/projectStore';
 import { MHzInput } from './MHzInput';
 
+// A <select> whose value matches no option silently renders the first one, so
+// an imported project could display an order the engine is not using. Fold any
+// unlisted value into the list instead.
+function orderOptions(preset: number[], current: number): number[] {
+  return preset.includes(current)
+    ? preset
+    : [...preset, current].sort((a, b) => a - b);
+}
+
 export function SettingsPanel() {
   const settings = useProjectStore((s) => s.settings);
   const setSettings = useProjectStore((s) => s.setSettings);
@@ -33,7 +42,7 @@ export function SettingsPanel() {
           value={settings.lowOrder}
           onChange={(e) => setSettings({ lowOrder: Number(e.target.value) })}
         >
-          {[2, 3, 5, 7].map((o) => (
+          {orderOptions([2, 3, 5, 7], settings.lowOrder).map((o) => (
             <option key={o} value={o}>
               {o}
             </option>
@@ -58,7 +67,7 @@ export function SettingsPanel() {
             setSettings({ highOrder: value });
           }}
         >
-          {[3, 5, 7, 9].map((o) => (
+          {orderOptions([3, 5, 7, 9], settings.highOrder).map((o) => (
             <option key={o} value={o}>
               {o}
             </option>

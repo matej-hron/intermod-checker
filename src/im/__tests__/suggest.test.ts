@@ -133,4 +133,37 @@ describe('suggest', () => {
     expect(byId.get('c')?.toKHz).toBe(508975);
     expect(byId.get('c')?.distanceKHz).toBe(25);
   });
+
+  it('solves two independent conflict clusters', () => {
+    // Two clusters far apart: 2*510-511 = 509, and 2*610-611 = 609.
+    // While cluster two is still unfixed its conflict is present in the set,
+    // so a candidate for cluster one must not be rejected because of it.
+    const carriers = [
+      carrier('a', 510),
+      carrier('b', 511),
+      carrier('v1', 509),
+      carrier('d', 610),
+      carrier('e', 611),
+      carrier('v2', 609),
+    ];
+    const suggestions = suggest(carriers, settings);
+    expect(suggestions.length).toBeGreaterThan(0);
+    expect(suggestions.every((s) => s.toKHz !== null)).toBe(true);
+
+    const byId = new Map(
+      suggestions.filter((s) => s.toKHz !== null).map((s) => [s.carrierId, s.toKHz as number]),
+    );
+    const applied = carriers.map((c) =>
+      byId.has(c.id) ? { ...c, freqKHz: byId.get(c.id) as number } : c,
+    );
+    expect(analyze(applied, settings).conflictedIds).toEqual([]);
+  });
+
+  it('finds replacements for a realistic twelve-carrier set', () => {
+    const carriers = Array.from({ length: 12 }, (_, i) =>
+      carrier(`m${i}`, 502 + i * 2.5),
+    );
+    const suggestions = suggest(carriers, DEFAULT_SETTINGS);
+    expect(suggestions.some((s) => s.toKHz !== null)).toBe(true);
+  });
 });

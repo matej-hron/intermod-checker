@@ -95,7 +95,11 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
 
   cancel: () => client.cancel(),
 
-  clear: () =>
+  // Bumping the token supersedes any in-flight run, so a result computed from
+  // the old frequencies cannot land after the state has been invalidated.
+  clear: () => {
+    runToken += 1;
+    client.cancel();
     set({
       status: 'idle',
       progress: null,
@@ -103,5 +107,6 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
       suggestions: [],
       issues: [],
       errorMessage: null,
-    }),
+    });
+  },
 }));

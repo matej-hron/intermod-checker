@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { serializeProject, parseProject, isProjectFile, PROJECT_VERSION } from '../project';
+import { serializeProject, parseProject, PROJECT_VERSION } from '../project';
 import { DEFAULT_SETTINGS, type Carrier } from '../types';
 
 const carriers: Carrier[] = [
@@ -87,7 +87,4 @@ describe('project files', () => {
     expect(parsed.settings.oddOnly).toBe(DEFAULT_SETTINGS.oddOnly);
   });
 
-  it('does not treat a mistyped settings object as a project file', () => {
-    expect(isProjectFile({ version: 1, name: 'p', carriers: [], settings: {} })).toBe(false);
-  });
 });

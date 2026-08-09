@@ -28,6 +28,8 @@ export const DEFAULT_SETTINGS: Settings = {
   suggestionStepKHz: 25,
 };
 
+export const MAX_ORDER = 9;
+
 export const MIN_CARRIERS = 2;
 export const MAX_CARRIERS = 24;
 

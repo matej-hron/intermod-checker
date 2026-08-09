@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useAnalysisStore } from './analysisStore';
 import {
   DEFAULT_SETTINGS,
   parseProject,
@@ -69,7 +70,19 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     }
   };
 
+  // Any change to the carriers or settings invalidates the last analysis: the
+  // results describe the frequencies they were computed from, and rendering
+  // them beside edited ones produces confident statements that were never true
+  // (a conflict verdict attached to a frequency it was never computed for).
   const update = (partial: Partial<ProjectState>): void => {
+    set(partial);
+    persist();
+    useAnalysisStore.getState().clear();
+  };
+
+  // Renaming changes nothing the analysis depends on, so it must not discard
+  // a result the user is still reading.
+  const updateMeta = (partial: Partial<ProjectState>): void => {
     set(partial);
     persist();
   };
@@ -79,7 +92,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     carriers: restored?.carriers ?? initialCarriers(),
     settings: restored?.settings ?? DEFAULT_SETTINGS,
 
-    setName: (name) => update({ name }),
+    setName: (name) => updateMeta({ name }),
 
     addCarrier: () => {
       const carriers = get().carriers;
