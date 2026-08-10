@@ -29,26 +29,29 @@ export function SuggestionPanel() {
       </p>
       <ul>
         {suggestions.map((suggestion) => (
-          <li key={suggestion.carrierId}>
+          <li key={suggestion.carrierId} className="suggestion">
             <strong>{labelFor(suggestion.carrierId)}</strong>{' '}
-            {kHzToMHzText(suggestion.fromKHz)} MHz →{' '}
             {suggestion.toKHz === null ? (
-              <>
+              <div className="suggestion__values">
+                {kHzToMHzText(suggestion.fromKHz)} MHz →{' '}
                 <em>{suggestion.failureReason}</em>{' '}
                 <button
                   type="button"
+                  className="btn--ghost"
                   aria-label={`Choose a frequency for ${labelFor(suggestion.carrierId)}`}
                   onClick={() => openTune(suggestion.carrierId)}
                 >
                   Choose myself
                 </button>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="suggestion__values">
+                {kHzToMHzText(suggestion.fromKHz)} MHz →{' '}
                 <strong>{kHzToMHzText(suggestion.toKHz)} MHz</strong> (
                 {suggestion.distanceKHz} kHz away){' '}
                 <button
                   type="button"
+                  className="btn--primary"
                   onClick={() => {
                     applySuggestions([suggestion]);
                     clear();
@@ -58,12 +61,13 @@ export function SuggestionPanel() {
                 </button>{' '}
                 <button
                   type="button"
+                  className="btn--ghost"
                   aria-label={`Choose a frequency for ${labelFor(suggestion.carrierId)}`}
                   onClick={() => openTune(suggestion.carrierId)}
                 >
                   Choose myself
                 </button>
-              </>
+              </div>
             )}
           </li>
         ))}

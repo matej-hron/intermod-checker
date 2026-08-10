@@ -36,16 +36,16 @@ export function ResultsSummary() {
           {external.length === 1 ? '' : 's'} land on your frequencies.
         </p>
       )}
-      <ul>
+      <div className="summary-grid">
         {(['high', 'medium', 'low'] as const).map((severity) => (
-          <li key={severity}>
+          <div key={severity} className="summary-grid__cell">
             <span className={`badge badge--${severity}`}>
               {SEVERITY_LABEL[severity]}
             </span>{' '}
             {counts[severity]}
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
       <p className="hint">
         {result.vectorsExamined.toLocaleString('en-GB')} coefficient combinations
         examined.
