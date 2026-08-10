@@ -76,7 +76,7 @@ export function FrequencyTable() {
                 )}
               </td>
               <td>
-                <button type="button" onClick={() => openTune(carrier.id)}>
+                <button type="button" onClick={() => openTune(carrier.id)} aria-label={`Tune carrier ${index + 1}`}>
                   Tune
                 </button>
                 <button

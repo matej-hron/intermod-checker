@@ -31,11 +31,11 @@ export function ExclusionEditor() {
             </tr>
           </thead>
           <tbody>
-            {settings.exclusions.map((exclusion) => (
+            {settings.exclusions.map((exclusion, index) => (
               <tr key={exclusion.id}>
                 <td>
                   <input
-                    aria-label={`Label for excluded range ${exclusion.label}`}
+                    aria-label={`Label for excluded range ${index + 1}`}
                     value={exclusion.label}
                     onChange={(e) =>
                       updateExclusion(exclusion.id, { label: e.target.value })
@@ -44,14 +44,14 @@ export function ExclusionEditor() {
                 </td>
                 <td>
                   <MHzInput
-                    label={`Start of ${exclusion.label} in megahertz`}
+                    label={`Start of excluded range ${index + 1} in megahertz`}
                     valueKHz={exclusion.startKHz}
                     onCommit={(startKHz) => updateExclusion(exclusion.id, { startKHz })}
                   />
                 </td>
                 <td>
                   <MHzInput
-                    label={`End of ${exclusion.label} in megahertz`}
+                    label={`End of excluded range ${index + 1} in megahertz`}
                     valueKHz={exclusion.endKHz}
                     onCommit={(endKHz) => updateExclusion(exclusion.id, { endKHz })}
                   />
@@ -60,7 +60,7 @@ export function ExclusionEditor() {
                   <button
                     type="button"
                     onClick={() => removeExclusion(exclusion.id)}
-                    aria-label={`Remove excluded range ${exclusion.label}`}
+                    aria-label={`Remove excluded range ${index + 1}`}
                   >
                     Remove
                   </button>
