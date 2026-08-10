@@ -442,6 +442,8 @@
 }
 .candidate {
   position: relative;
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface-raised);
@@ -480,13 +482,17 @@
   color: var(--text-muted);
   font-size: var(--text-sm);
 }
+/* The tags sit in normal flow above the frequency row; absolutely positioning
+   them would drop them onto the offset in the card's top-right corner. */
 .candidate__tags {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-3);
+  order: -1;
   display: flex;
+  justify-content: flex-end;
   gap: var(--space-1);
+  padding: var(--space-2) var(--space-3) 0;
 }
+.candidate__tags:empty { display: none; }
+.candidate:has(.candidate__tags:not(:empty)) .candidate__pick { padding-top: var(--space-1); }
 
 /* The desktop matrix scrolls inside its own panel rather than the page, so a
    wide table can never push the whole layout sideways. */
