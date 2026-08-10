@@ -1,6 +1,6 @@
 # Mobile-first redesign and PWA — design
 
-Status: approved
+**Status:** implemented
 Date: 2026-08-10
 Supersedes: nothing. Extends the v1 and v2 designs; the interference engine is untouched.
 

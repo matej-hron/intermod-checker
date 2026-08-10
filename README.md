@@ -38,6 +38,32 @@ replacement frequencies when they do.
 - Saves your project to `localStorage` automatically, and can export it to or
   import it from a JSON file.
 
+## On a phone
+
+The interface is built mobile-first. On a phone the three sections sit in a
+bottom bar within thumb reach, Analyse is always one tap away in a sticky bar
+above it, and the Tune view shows candidate frequencies as a filtered list of
+large tap targets — defaulting to the clear ones, with the nearest clear
+frequency pinned at the top. From 768 px the same views expand: the tabs move
+to the top and Tune shows the full scored matrix.
+
+## Installing it
+
+The app is a PWA. Every calculation already runs in your browser, so once
+installed it works with no network at all — useful backstage, in a basement, or
+anywhere signal is poor.
+
+- **Android / desktop Chrome:** use the install prompt in the address bar.
+- **iOS:** Safari does not offer a prompt. Use Share → *Add to Home Screen*.
+
+Two things worth knowing:
+
+- An installed iOS app gets its own storage. A project saved in Safari will not
+  appear inside the installed app. Use **Export JSON** and **Import JSON** to
+  move a project between them.
+- When a new version is available the app shows a *Reload* bar rather than
+  updating itself. It will never reload underneath you mid-show.
+
 ## The theory, briefly
 
 An intermodulation (IM) product of carriers `A`, `B`, `C`… is any frequency of
