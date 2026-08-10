@@ -29,6 +29,7 @@ export function CarrierList() {
             }
           >
             <input
+              type="text"
               className="carrier__name"
               aria-label={`Device name for ${carrier.label}`}
               value={carrier.label}

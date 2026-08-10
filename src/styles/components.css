@@ -281,6 +281,10 @@
   .carrier__actions button { flex: none; }
   .carrier-list__add { width: auto; }
   .settings__body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* The excluded-range editor and the reset action are full-width blocks, not
+     fields, so they span the field grid rather than sitting in one column. */
+  .settings__body > .exclusions,
+  .settings__body > button { grid-column: 1 / -1; }
   .exclusion-row {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
     padding: 0;

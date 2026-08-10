@@ -134,10 +134,10 @@ export function SettingsPanel() {
 
       <ExclusionEditor />
 
-      <button type="button" onClick={resetSettings}>
-        Reset to defaults ({DEFAULT_SETTINGS.lowOrder}–{DEFAULT_SETTINGS.highOrder}
-        {' '}order, {DEFAULT_SETTINGS.nearHitWindowKHz} kHz window)
-      </button>
+        <button type="button" onClick={resetSettings}>
+          Reset to defaults ({DEFAULT_SETTINGS.lowOrder}–{DEFAULT_SETTINGS.highOrder}
+          {' '}order, {DEFAULT_SETTINGS.nearHitWindowKHz} kHz window)
+        </button>
       </div>
     </details>
   );
