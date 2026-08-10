@@ -43,7 +43,11 @@ export default defineConfig({
         // The analysis Web Worker is emitted as its own chunk. If it is not
         // precached the installed app opens and then cannot compute anything,
         // which is the worst possible offline failure.
+        // No woff2 here on purpose: --font is a system stack, so there are no
+        // font files to precache. Add it if a web font is ever introduced.
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        // Single-page app: every in-scope navigation resolves to the shell.
+        // Anything else ever published under this base would be shadowed by it.
         navigateFallback: `${base}index.html`,
         cleanupOutdatedCaches: true,
       },
