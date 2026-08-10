@@ -23,10 +23,16 @@ replacement frequencies when they do.
   window, and ranks it by severity — third order is the most serious, then
   fifth, then seventh and above.
 - Proposes a replacement frequency for each conflicted carrier, one at a time,
-  each calculated with the previous replacements already applied. Applying them
-  all clears the conflicts that were found; a carrier for which no clean
-  frequency exists is reported as such and left alone, so re-run the analysis
+  each calculated with the previous replacements already applied. A carrier for
+  which no clean frequency exists is reported as such and left alone; in a
+  congested band the later carriers can run out of room, so re-run the analysis
   to confirm the final set.
+- Lets you lock any transmitter whose frequency cannot change, so nothing ever
+  proposes moving it and the suggestion engine works around it.
+- Lets you define excluded frequency ranges to keep clear (local TV, in-ear
+  monitors, intercom); no frequency inside one is ever offered.
+- Includes a Tune view for picking one transmitter and browsing every frequency
+  available to it, each rated against the interference tests that apply.
 - Runs the whole search on a background worker, so a 12-carrier scan does not
   freeze the page.
 - Saves your project to `localStorage` automatically, and can export it to or
@@ -60,6 +66,30 @@ of the product's own contributing carriers. Self-involving hits are shown but
 excluded from the conflict count, since a carrier's own harmonics landing
 back on itself is a different (and far more common, far less actionable)
 phenomenon than a genuine cross-channel conflict.
+
+### Tune
+
+Pick one transmitter and see every frequency available to it within ±2 MHz,
+each rated against the interference tests that apply. A test is named
+`{transmitters}T{order}` — `2T3` is "two transmitters, third order", the
+strongest and most common kind of intermodulation. Alongside them, `Spacing`
+checks the minimum gap to your other transmitters and `Excl.` checks your
+excluded ranges. The Verdict column names the worst product and which
+transmitters cause it.
+
+Dots are hollow for clear, a ring for a near miss, and filled for a direct hit,
+so the grid is readable without relying on colour.
+
+### Locking and excluded ranges
+
+Lock a transmitter in Setup when its frequency cannot change — a fixed install,
+a unit already programmed, a presenter's handheld. Nothing will ever propose
+moving it, and the suggestion engine works around it instead.
+
+Add excluded ranges for blocks you must keep clear: local TV broadcast, in-ear
+monitors, intercom. No frequency inside one is ever offered. Interference
+products landing inside an excluded range are ignored, because nothing of yours
+is listening there.
 
 ## Running it
 

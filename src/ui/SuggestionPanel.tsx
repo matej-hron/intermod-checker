@@ -1,6 +1,7 @@
 import { kHzToMHzText } from '../im';
 import { useAnalysisStore } from '../state/analysisStore';
 import { useProjectStore } from '../state/projectStore';
+import { useViewStore } from '../state/viewStore';
 
 export function SuggestionPanel() {
   const suggestions = useAnalysisStore((s) => s.suggestions);
@@ -8,6 +9,7 @@ export function SuggestionPanel() {
   const status = useAnalysisStore((s) => s.status);
   const carriers = useProjectStore((s) => s.carriers);
   const applySuggestions = useProjectStore((s) => s.applySuggestions);
+  const openTune = useViewStore((s) => s.openTune);
 
   if (status !== 'done' || suggestions.length === 0) return null;
 
@@ -20,9 +22,9 @@ export function SuggestionPanel() {
     <section className="panel">
       <h2>Suggested changes</h2>
       <p className="hint">
-        Each suggestion is calculated with the previous ones already applied, so
-        applying them all clears the conflicts listed here. Run the analysis
-        again afterwards to confirm — and note that any carrier shown below
+        Each suggestion is calculated with the previous ones already applied.
+        Run the analysis again afterwards to confirm the result: in a congested
+        band the later carriers can run out of room, and any carrier listed
         without a replacement is left where it is.
       </p>
       <ul>
@@ -31,7 +33,15 @@ export function SuggestionPanel() {
             <strong>{labelFor(suggestion.carrierId)}</strong>{' '}
             {kHzToMHzText(suggestion.fromKHz)} MHz →{' '}
             {suggestion.toKHz === null ? (
-              <em>{suggestion.failureReason}</em>
+              <>
+                <em>{suggestion.failureReason}</em>{' '}
+                <button
+                  type="button"
+                  onClick={() => openTune(suggestion.carrierId)}
+                >
+                  Choose myself
+                </button>
+              </>
             ) : (
               <>
                 <strong>{kHzToMHzText(suggestion.toKHz)} MHz</strong> (
@@ -44,6 +54,12 @@ export function SuggestionPanel() {
                   }}
                 >
                   Apply
+                </button>{' '}
+                <button
+                  type="button"
+                  onClick={() => openTune(suggestion.carrierId)}
+                >
+                  Choose myself
                 </button>
               </>
             )}
