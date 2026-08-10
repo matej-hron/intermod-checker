@@ -1,31 +1,18 @@
-import { FrequencyTable } from './ui/FrequencyTable';
+import { CarrierList } from './ui/CarrierList';
 import { SettingsPanel } from './ui/SettingsPanel';
 import { ResultsSummary } from './ui/ResultsSummary';
 import { ConflictList } from './ui/ConflictList';
 import { SpectrumStrip } from './ui/SpectrumStrip';
 import { SuggestionPanel } from './ui/SuggestionPanel';
-import { ProjectBar } from './ui/ProjectBar';
 import { TuneView } from './ui/TuneView';
-import { useProjectStore } from './state/projectStore';
-import { useAnalysisStore } from './state/analysisStore';
+import { AppBar } from './ui/AppBar';
+import { Nav } from './ui/Nav';
+import { ActionBar } from './ui/ActionBar';
+import { UpdatePrompt } from './ui/UpdatePrompt';
 import { useViewStore, type ViewName } from './state/viewStore';
 import { useTuneStore } from './state/tuneStore';
 
-const VIEWS: { id: ViewName; label: string }[] = [
-  { id: 'setup', label: 'Setup' },
-  { id: 'results', label: 'Results' },
-  { id: 'tune', label: 'Tune' },
-];
-
 export default function App() {
-  const carriers = useProjectStore((s) => s.carriers);
-  const settings = useProjectStore((s) => s.settings);
-  const status = useAnalysisStore((s) => s.status);
-  const progress = useAnalysisStore((s) => s.progress);
-  const errorMessage = useAnalysisStore((s) => s.errorMessage);
-  const issues = useAnalysisStore((s) => s.issues);
-  const run = useAnalysisStore((s) => s.run);
-  const cancel = useAnalysisStore((s) => s.cancel);
   const view = useViewStore((s) => s.view);
   const goTo = useViewStore((s) => s.goTo);
   const resetTune = useTuneStore((s) => s.reset);
@@ -40,75 +27,32 @@ export default function App() {
   };
 
   return (
-    <main className="app">
-      <h1>Intermodulation Checker</h1>
-      <ProjectBar />
+    <div className="app">
+      <AppBar />
+      <Nav view={view} onNavigate={navigateTo} />
+      <ActionBar onNavigate={navigateTo} />
 
-      <nav className="views" aria-label="Sections">
-        {VIEWS.map((v) => (
-          <button
-            key={v.id}
-            type="button"
-            className={view === v.id ? 'view-tab view-tab--active' : 'view-tab'}
-            aria-current={view === v.id ? 'page' : undefined}
-            onClick={() => navigateTo(v.id)}
-          >
-            {v.label}
-          </button>
-        ))}
-      </nav>
-
-      <section className="panel">
-        <button
-          type="button"
-          onClick={() => {
-            void run(carriers, settings);
-            navigateTo('results');
-          }}
-          disabled={status === 'running'}
-        >
-          Analyse
-        </button>
-        {status === 'running' && (
+      <main className="app__main">
+        {view === 'setup' && (
           <>
-            <span>
-              {progress?.phase === 'suggest' ? 'Finding alternatives' : 'Analysing'}{' '}
-              {Math.round((progress?.fraction ?? 0) * 100)}%
-            </span>
-            <button type="button" onClick={cancel}>
-              Cancel
-            </button>
+            <CarrierList />
+            <SettingsPanel />
           </>
         )}
-        {errorMessage !== null && <p className="error">{errorMessage}</p>}
-        {issues.length > 0 && (
-          <ul className="error">
-            {issues.map((issue, i) => (
-              <li key={i}>{issue.message}</li>
-            ))}
-          </ul>
+
+        {view === 'results' && (
+          <>
+            <ResultsSummary />
+            <SuggestionPanel />
+            <SpectrumStrip />
+            <ConflictList />
+          </>
         )}
-      </section>
 
-      {view === 'setup' && (
-        <>
-          <FrequencyTable />
-          <SettingsPanel />
-        </>
-      )}
+        {view === 'tune' && <TuneView />}
+      </main>
 
-      {view === 'results' && (
-        <>
-          <ResultsSummary />
-          <SuggestionPanel />
-          <SpectrumStrip />
-          <ConflictList />
-        </>
-      )}
-
-      {view === 'tune' && <TuneView />}
-
-      <footer className="panel hint">
+      <footer className="disclaimer">
         <p>
           This tool models intermodulation products arithmetically from the
           frequencies you enter. It does not know your transmitter power,
@@ -118,6 +62,8 @@ export default function App() {
           site before a performance.
         </p>
       </footer>
-    </main>
+
+      <UpdatePrompt />
+    </div>
   );
 }

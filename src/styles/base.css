@@ -1,0 +1,191 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font: var(--text-base) / 1.5 var(--font);
+  color: var(--text);
+  background: var(--surface-sunken);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1.25;
+}
+h1 { font-size: var(--text-xl); }
+h2 { font-size: var(--text-lg); }
+h3 { font-size: var(--text-base); }
+p { margin: 0; }
+ul { margin: 0; }
+
+/* Controls are styled on the bare element so a control can never be shipped
+   below the touch minimum by forgetting a class. */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button,
+select,
+summary,
+[role='button'] {
+  cursor: pointer;
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* 16px is the threshold below which iOS Safari zooms the viewport on focus. */
+input,
+select,
+textarea {
+  min-height: var(--tap);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: max(1rem, var(--text-base));
+}
+
+input[type='checkbox'] {
+  min-height: 0;
+  width: 1.375rem;
+  height: 1.375rem;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: var(--radius-sm);
+}
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.btn--ghost {
+  border-color: transparent;
+  background: transparent;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.error {
+  color: var(--exact);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem var(--space-2);
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+}
+.badge--bad { background: var(--exact-bg); color: var(--exact); }
+.badge--good { background: var(--clear-bg); color: var(--clear); }
+.badge--high { background: var(--exact-bg); color: var(--exact); }
+.badge--medium { background: var(--near-bg); color: var(--near); }
+.badge--low { background: var(--surface-sunken); color: var(--text-muted); }
+
+/* The shell. The bottom padding clears the fixed action bar and navigation on
+   phones; from 48rem both are static and the reservation is dropped. */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  padding-bottom: calc(
+    var(--tap) * 2 + var(--space-4) + env(safe-area-inset-bottom)
+  );
+}
+
+.app__main {
+  flex: 1;
+  width: 100%;
+  padding: 0 var(--space-4);
+}
+
+.panel {
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.panel > h2 {
+  margin-bottom: var(--space-3);
+}
+
+.disclaimer {
+  padding: var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 48rem) {
+  .app {
+    padding-bottom: var(--space-6);
+  }
+}
+
+@media (min-width: 64rem) {
+  .app__main,
+  .app__bar {
+    max-width: 64rem;
+    margin-inline: auto;
+  }
+}

@@ -1,0 +1,540 @@
+.freq-input--invalid {
+  border-color: var(--exact);
+  box-shadow: 0 0 0 2px var(--exact-bg);
+}
+
+.spectrum {
+  position: relative;
+  height: 5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  overflow: hidden;
+}
+/* Markers are centred on their frequency, so the track is inset by half the
+   widest marker to keep one sitting exactly on a band edge fully visible. */
+.spectrum__track { position: absolute; inset: 0 2px; }
+.spectrum__product,
+.spectrum__carrier { transform: translateX(-50%); }
+.spectrum__product { position: absolute; bottom: 0; width: 1px; height: 35%; background: var(--border-strong); }
+.spectrum__product--high { background: var(--exact); height: 100%; width: 2px; }
+.spectrum__product--medium { background: var(--near); height: 65%; }
+.spectrum__product--low { background: var(--border-strong); height: 35%; }
+.spectrum__carrier { position: absolute; top: 0; width: 2px; height: 100%; background: var(--clear); }
+.spectrum__carrier--bad { background: var(--exact); width: 3px; }
+.spectrum__scale { display: flex; justify-content: space-between; font-size: var(--text-sm); color: var(--text-muted); }
+
+.dot {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  box-sizing: border-box;
+  flex: none;
+}
+.dot--clear { border: 1px solid var(--clear); background: transparent; }
+.dot--near { border: 3px solid var(--near); background: transparent; }
+.dot--exact { border: 1px solid var(--exact); background: var(--exact); }
+
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  padding: var(--space-3) var(--space-4);
+  padding-top: calc(var(--space-3) + env(safe-area-inset-top));
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.app-bar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.app-bar__title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-lg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-bar__project { padding: 0 var(--space-2); }
+.app-bar__name {
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.sheet {
+  width: 100%;
+  max-width: 30rem;
+  margin: auto auto 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--surface);
+  color: var(--text);
+}
+.sheet::backdrop { background: rgba(0, 0, 0, 0.45); }
+.sheet__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+}
+@media (min-width: 48rem) {
+  .sheet { margin: auto; border-radius: var(--radius-lg); }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Bottom bar in the thumb arc on phones; a row of tabs from 48rem up. */
+.nav {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 20;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav__tab {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.nav__tab[aria-current='page'] {
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: inset 0 2px 0 var(--accent);
+}
+
+.action-bar {
+  position: fixed;
+  inset: auto 0 calc(var(--tap) + env(safe-area-inset-bottom)) 0;
+  z-index: 19;
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.action-bar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.action-bar__go { flex: 1; }
+.action-bar__progress {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.action-bar__issues { font-size: var(--text-sm); }
+.action-bar__issues:not(:empty) { margin-top: var(--space-2); }
+
+@media (min-width: 48rem) {
+  .nav {
+    position: static;
+    grid-auto-columns: max-content;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-4) 0;
+    background: transparent;
+    border-top: 0;
+  }
+  .nav__tab {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0 var(--space-4);
+    background: var(--surface);
+  }
+  .nav__tab[aria-current='page'] {
+    background: var(--surface-raised);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  .action-bar {
+    position: static;
+    padding: var(--space-4) var(--space-4) 0;
+    background: transparent;
+    border-top: 0;
+  }
+  .action-bar__go { flex: 0 0 auto; }
+}
+
+@media (min-width: 64rem) {
+  .nav,
+  .action-bar { padding-inline: 0; }
+  .nav { max-width: 64rem; margin-inline: auto; }
+  .action-bar { max-width: 64rem; margin-inline: auto; }
+}
+
+.carrier-list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.carrier {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'name    status'
+    'freq    lock'
+    'actions actions';
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+.carrier--invalid { border-color: var(--exact); background: var(--exact-bg); }
+.carrier__name { grid-area: name; min-width: 0; }
+.carrier__status { grid-area: status; justify-self: end; }
+.carrier__freq {
+  grid-area: freq;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.carrier__freq input { font-variant-numeric: tabular-nums; min-width: 0; }
+.carrier__unit { color: var(--text-muted); font-size: var(--text-sm); }
+.carrier__lock {
+  grid-area: lock;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: var(--tap);
+  min-height: var(--tap);
+  margin: 0;
+}
+.carrier__actions {
+  grid-area: actions;
+  display: flex;
+  gap: var(--space-2);
+}
+.carrier__actions button { flex: 1; }
+.carrier-list__add { width: 100%; margin-top: var(--space-3); }
+
+.settings__summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: var(--tap);
+  justify-content: center;
+}
+.settings__body {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.settings__body label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin: 0;
+}
+.settings__body label:has(input[type='checkbox']) {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+}
+.settings__subhead { margin-top: var(--space-4); }
+/* Three text fields plus a button will not fit a phone's width legibly, so
+   they stack until there is room for a line. */
+.exclusion-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+
+@media (min-width: 48rem) {
+  .carrier {
+    grid-template-columns: minmax(0, 1fr) 12rem auto auto auto;
+    grid-template-areas: 'name freq lock status actions';
+  }
+  .carrier__actions { flex: none; }
+  .carrier__actions button { flex: none; }
+  .carrier-list__add { width: auto; }
+  .settings__body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* The excluded-range editor and the reset action are full-width blocks, not
+     fields, so they span the field grid rather than sitting in one column. */
+  .settings__body > .exclusions,
+  .settings__body > button { grid-column: 1 / -1; }
+  .exclusion-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+}
+
+/* ── Task 4: Results view touch pass ── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: var(--space-3);
+}
+.summary-grid__cell {
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  text-align: center;
+}
+
+.conflict-list {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+.conflict {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+.conflict--high { border-left-color: var(--exact); }
+.conflict--medium { border-left-color: var(--near); }
+.conflict__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+.conflict__detail {
+  margin-top: var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.suggestion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.suggestion__values {
+  flex: 1 1 12rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.context-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* The carrier switcher above the Tune view. Each chip is a whole tap target
+   carrying the device, its frequency, and its state as text — the border
+   colour only reinforces what the label already says. */
+.context-strip {
+  padding: 0;
+  list-style: none;
+}
+.context-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  font-size: var(--text-sm);
+  line-height: 1.3;
+}
+.context-chip__label { font-weight: 600; color: var(--text); }
+.context-chip__freq { font-variant-numeric: tabular-nums; }
+.context-chip__state { color: var(--text-muted); }
+.context-chip--conflict { border-color: var(--exact); background: var(--exact-bg); }
+.context-chip--clear { border-color: var(--clear); background: var(--clear-bg); }
+.context-chip--selected { box-shadow: inset 0 0 0 2px var(--accent); }
+
+.exclusions__rows {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.pinned {
+  position: sticky;
+  top: calc(var(--tap) + var(--space-4));
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--clear);
+  border-radius: var(--radius);
+  background: var(--clear-bg);
+}
+.pinned__freq {
+  display: block;
+  font-size: var(--text-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  padding: var(--space-1);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+.segmented__option {
+  min-height: var(--tap);
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  font-size: var(--text-sm);
+}
+.segmented__option[aria-pressed='true'] {
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+}
+
+.candidate-list {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+.candidate {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+.candidate--current { border-color: var(--accent); }
+.candidate--best { border-color: var(--clear); }
+.candidate__pick {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-3);
+  width: 100%;
+  min-height: 3.5rem;
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  text-align: left;
+}
+.candidate__pick:disabled { opacity: 1; }
+.candidate__freq {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.candidate__unit { font-size: var(--text-sm); font-weight: 400; color: var(--text-muted); }
+.candidate__delta {
+  justify-self: end;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.candidate__verdict {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+/* The tags sit in normal flow above the frequency row; absolutely positioning
+   them would drop them onto the offset in the card's top-right corner. */
+.candidate__tags {
+  order: -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3) 0;
+}
+.candidate__tags:empty { display: none; }
+.candidate:has(.candidate__tags:not(:empty)) .candidate__pick { padding-top: var(--space-1); }
+
+/* The desktop matrix scrolls inside its own panel rather than the page, so a
+   wide table can never push the whole layout sideways. */
+.candidate-grid { width: 100%; border-collapse: collapse; }
+.candidate-grid th,
+.candidate-grid td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.candidate-grid td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.candidate-row--current { background: var(--surface-raised); }
+.candidate-row--best { background: var(--clear-bg); }
+.candidate-pick {
+  min-height: var(--tap);
+  border: 0;
+  background: transparent;
+  padding: 0 var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+.grid-scroll { overflow-x: auto; }
+
+.update-prompt {
+  position: fixed;
+  inset: auto var(--space-4)
+    calc(var(--tap) * 2 + var(--space-4) + env(safe-area-inset-bottom)) var(--space-4);
+  z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+@media (min-width: 48rem) {
+  .update-prompt {
+    inset: auto var(--space-4) var(--space-4) auto;
+    max-width: 24rem;
+  }
+}

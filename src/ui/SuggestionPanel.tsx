@@ -29,42 +29,41 @@ export function SuggestionPanel() {
       </p>
       <ul>
         {suggestions.map((suggestion) => (
-          <li key={suggestion.carrierId}>
-            <strong>{labelFor(suggestion.carrierId)}</strong>{' '}
-            {kHzToMHzText(suggestion.fromKHz)} MHz →{' '}
-            {suggestion.toKHz === null ? (
-              <>
-                <em>{suggestion.failureReason}</em>{' '}
-                <button
-                  type="button"
-                  aria-label={`Choose a frequency for ${labelFor(suggestion.carrierId)}`}
-                  onClick={() => openTune(suggestion.carrierId)}
-                >
-                  Choose myself
-                </button>
-              </>
-            ) : (
-              <>
-                <strong>{kHzToMHzText(suggestion.toKHz)} MHz</strong> (
-                {suggestion.distanceKHz} kHz away){' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    applySuggestions([suggestion]);
-                    clear();
-                  }}
-                >
-                  Apply
-                </button>{' '}
-                <button
-                  type="button"
-                  aria-label={`Choose a frequency for ${labelFor(suggestion.carrierId)}`}
-                  onClick={() => openTune(suggestion.carrierId)}
-                >
-                  Choose myself
-                </button>
-              </>
+          <li key={suggestion.carrierId} className="suggestion">
+            {/* The device name and its current frequency read as one phrase, so
+                they stay in the same wrapper and wrap together. */}
+            <div className="suggestion__values">
+              <strong>{labelFor(suggestion.carrierId)}</strong>{' '}
+              {kHzToMHzText(suggestion.fromKHz)} MHz →{' '}
+              {suggestion.toKHz === null ? (
+                <em>{suggestion.failureReason}</em>
+              ) : (
+                <>
+                  <strong>{kHzToMHzText(suggestion.toKHz)} MHz</strong>{' '}
+                  <span className="hint">({suggestion.distanceKHz} kHz away)</span>
+                </>
+              )}
+            </div>
+            {suggestion.toKHz !== null && (
+              <button
+                type="button"
+                className="btn--primary"
+                onClick={() => {
+                  applySuggestions([suggestion]);
+                  clear();
+                }}
+              >
+                Apply
+              </button>
             )}
+            <button
+              type="button"
+              className="btn--ghost"
+              aria-label={`Choose a frequency for ${labelFor(suggestion.carrierId)}`}
+              onClick={() => openTune(suggestion.carrierId)}
+            >
+              Choose myself
+            </button>
           </li>
         ))}
       </ul>
