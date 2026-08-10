@@ -46,18 +46,19 @@ export function ActionBar({
         )}
       </div>
 
-      {(errorMessage !== null || issues.length > 0) && (
-        <div className="app__bar action-bar__issues" role="alert">
-          {errorMessage !== null && <p className="error">{errorMessage}</p>}
-          {issues.length > 0 && (
-            <ul className="error">
-              {issues.map((issue, i) => (
-                <li key={i}>{issue.message}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+      {/* Always in the DOM and updated in place: a container that mounts with
+          content already in it is announced in full every time it appears, so
+          returning to this view would re-read every issue. */}
+      <div className="app__bar action-bar__issues" aria-live="polite">
+        {errorMessage !== null && <p className="error">{errorMessage}</p>}
+        {issues.length > 0 && (
+          <ul className="error">
+            {issues.map((issue, i) => (
+              <li key={i}>{issue.message}</li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

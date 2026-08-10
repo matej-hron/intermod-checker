@@ -141,7 +141,8 @@
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
-.action-bar__issues { margin-top: var(--space-2); font-size: var(--text-sm); }
+.action-bar__issues { font-size: var(--text-sm); }
+.action-bar__issues:not(:empty) { margin-top: var(--space-2); }
 
 @media (min-width: 48rem) {
   .nav {
