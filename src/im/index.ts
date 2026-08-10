@@ -3,6 +3,7 @@ export * from './units';
 export * from './enumerate';
 export * from './products';
 export * from './criteria';
+export * from './evaluate';
 export * from './format';
 export * from './analyze';
 export * from './validate';
