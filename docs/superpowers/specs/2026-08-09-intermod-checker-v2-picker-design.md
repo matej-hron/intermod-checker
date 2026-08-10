@@ -208,8 +208,19 @@ function evaluateCandidate(
   candidateKHz: number,
   settings: Settings,
   carriers: readonly Carrier[],
+  mode?: 'full' | 'first-hit',
 ): CandidateEvaluation;
 ```
+
+The `mode` parameter exists so the two callers can share the primitive without
+either paying the other's cost. `full` (the default) scans every product to
+resolve every criterion, which the grid needs. `first-hit` returns as soon as
+any interference criterion becomes non-`clear`, preserving the early abort that
+`suggest()` relies on: `suggest()` only asks "is this candidate completely
+clean?", and scanning on after the answer is known would make it dramatically
+slower for no benefit. In `first-hit` mode the unresolved criteria are left at
+`clear` and `worst` reflects only what was examined, so its result must not be
+rendered as a grid row.
 
 Semantics follow v1 §4.3 exactly, including the rule that only products the
 moved carrier is party to are counted. That rule is load-bearing and its
@@ -235,7 +246,7 @@ the array itself would produce contributors from an unrelated later vector.
 
 `suggest()` keeps its current contract and observable behaviour, but its
 candidate test becomes "every criterion is `clear`" evaluated through the shared
-primitive, with two additions:
+primitive in `first-hit` mode (§4.3), with two additions:
 
 1. Locked carriers are never proposed for movement. They remain in the working
    frequency set as immovable context.
