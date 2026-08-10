@@ -422,7 +422,7 @@
   background: var(--surface-sunken);
 }
 .segmented__option {
-  min-height: calc(var(--tap) - var(--space-2));
+  min-height: var(--tap);
   padding: 0 var(--space-2);
   border: 0;
   background: transparent;
