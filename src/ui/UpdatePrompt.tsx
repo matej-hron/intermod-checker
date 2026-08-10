@@ -6,21 +6,26 @@ export function UpdatePrompt() {
     updateServiceWorker,
   } = useRegisterSW();
 
-  if (!needRefresh) return null;
-
   return (
-    <div className="update-prompt" role="status">
-      <span>A new version is ready.</span>
-      <button
-        type="button"
-        className="btn--primary"
-        onClick={() => void updateServiceWorker(true)}
-      >
-        Reload
-      </button>
-      <button type="button" onClick={() => setNeedRefresh(false)}>
-        Later
-      </button>
+    /* The live region stays mounted and its contents change in place. A region
+       that appears with content already inside it is not reliably announced,
+       which would leave the prompt invisible to a screen reader. */
+    <div className="update-prompt-region" role="status">
+      {needRefresh && (
+        <div className="update-prompt">
+          <span>A new version is ready.</span>
+          <button
+            type="button"
+            className="btn--primary"
+            onClick={() => void updateServiceWorker(true)}
+          >
+            Reload
+          </button>
+          <button type="button" onClick={() => setNeedRefresh(false)}>
+            Later
+          </button>
+        </div>
+      )}
     </div>
   );
 }
