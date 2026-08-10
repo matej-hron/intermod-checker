@@ -390,3 +390,122 @@
   gap: var(--space-2);
   margin-top: var(--space-2);
 }
+
+.pinned {
+  position: sticky;
+  top: calc(var(--tap) + var(--space-4));
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--clear);
+  border-radius: var(--radius);
+  background: var(--clear-bg);
+}
+.pinned__freq {
+  display: block;
+  font-size: var(--text-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  padding: var(--space-1);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+.segmented__option {
+  min-height: calc(var(--tap) - var(--space-2));
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  font-size: var(--text-sm);
+}
+.segmented__option[aria-pressed='true'] {
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+}
+
+.candidate-list {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+.candidate {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+.candidate--current { border-color: var(--accent); }
+.candidate--best { border-color: var(--clear); }
+.candidate__pick {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-3);
+  width: 100%;
+  min-height: 3.5rem;
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  text-align: left;
+}
+.candidate__pick:disabled { opacity: 1; }
+.candidate__freq {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.candidate__unit { font-size: var(--text-sm); font-weight: 400; color: var(--text-muted); }
+.candidate__delta {
+  justify-self: end;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.candidate__verdict {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.candidate__tags {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-3);
+  display: flex;
+  gap: var(--space-1);
+}
+
+/* The desktop matrix scrolls inside its own panel rather than the page, so a
+   wide table can never push the whole layout sideways. */
+.candidate-grid { width: 100%; border-collapse: collapse; }
+.candidate-grid th,
+.candidate-grid td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.candidate-grid td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.candidate-row--current { background: var(--surface-raised); }
+.candidate-row--best { background: var(--clear-bg); }
+.candidate-pick {
+  min-height: var(--tap);
+  border: 0;
+  background: transparent;
+  padding: 0 var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+.grid-scroll { overflow-x: auto; }

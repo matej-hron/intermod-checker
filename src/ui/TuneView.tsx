@@ -3,7 +3,9 @@ import { kHzToMHzText } from '../im';
 import { useProjectStore } from '../state/projectStore';
 import { useTuneStore } from '../state/tuneStore';
 import { CandidateGrid } from './CandidateGrid';
+import { CandidateList } from './CandidateList';
 import { ContextStrip } from './ContextStrip';
+import { useMediaQuery } from './useMediaQuery';
 
 export function TuneView() {
   const carriers = useProjectStore((s) => s.carriers);
@@ -20,6 +22,7 @@ export function TuneView() {
   const widen = useTuneStore((s) => s.widen);
 
   const carrier = carriers.find((c) => c.id === carrierId) ?? null;
+  const wide = useMediaQuery('(min-width: 48rem)');
 
   // Re-evaluate whenever there is a selection but no results — which is the
   // state `select()` leaves behind, and the one `projectStore.update()` leaves
@@ -90,7 +93,7 @@ export function TuneView() {
 
           {status === 'done' && (
             <>
-              <CandidateGrid carrier={carrier} />
+              {wide ? <CandidateGrid carrier={carrier} /> : <CandidateList carrier={carrier} />}
               <button
                 type="button"
                 onClick={() => void widen(carriers, settings)}

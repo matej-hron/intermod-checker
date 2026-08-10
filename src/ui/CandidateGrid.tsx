@@ -47,6 +47,7 @@ export function CandidateGrid({ carrier }: { carrier: Carrier }) {
         </p>
       )}
 
+      <div className="grid-scroll">
       <table className="candidate-grid">
         <caption className="visually-hidden">
           Candidate frequencies for {carrier.label}, each rated against every
@@ -122,6 +123,7 @@ export function CandidateGrid({ carrier }: { carrier: Carrier }) {
           })}
         </tbody>
       </table>
+      </div>
     </>
   );
 }
