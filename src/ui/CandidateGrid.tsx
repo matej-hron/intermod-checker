@@ -15,7 +15,18 @@ function deltaText(offsetKHz: number): string {
 }
 
 export function CandidateGrid({ carrier }: { carrier: Carrier }) {
-  const { evaluations, criteria, currentKHz, showExclusion, nearestClear, locked, apply } = useCandidateModel(carrier);
+  // Evaluations arrive sorted by ascending frequency, which is how a spectrum
+  // reads; the Δ column carries the distance that nearest-first ordering would
+  // otherwise convey.
+  const {
+    evaluations,
+    criteria,
+    currentKHz,
+    showExclusion,
+    nearestClear,
+    locked,
+    apply,
+  } = useCandidateModel(carrier);
 
   if (evaluations.length === 0) {
     return (
