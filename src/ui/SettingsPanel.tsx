@@ -18,9 +18,12 @@ export function SettingsPanel() {
   const resetSettings = useProjectStore((s) => s.resetSettings);
 
   return (
-    <section className="panel">
-      <h2>Analysis settings</h2>
-
+    <details className="panel settings">
+      <summary className="settings__summary">
+        <h2>Analysis settings</h2>
+        <span className="hint">Band, orders, spacing, excluded ranges</span>
+      </summary>
+      <div className="settings__body">
       <label htmlFor="band-start">Band start (MHz)</label>
       <MHzInput
         id="band-start"
@@ -135,6 +138,7 @@ export function SettingsPanel() {
         Reset to defaults ({DEFAULT_SETTINGS.lowOrder}–{DEFAULT_SETTINGS.highOrder}
         {' '}order, {DEFAULT_SETTINGS.nearHitWindowKHz} kHz window)
       </button>
-    </section>
+      </div>
+    </details>
   );
 }

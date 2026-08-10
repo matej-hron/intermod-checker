@@ -179,3 +179,100 @@
   .nav { max-width: 64rem; margin-inline: auto; }
   .action-bar { max-width: 64rem; margin-inline: auto; }
 }
+
+.carrier-list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.carrier {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'name    status'
+    'freq    lock'
+    'actions actions';
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+.carrier--invalid { border-color: var(--exact); background: var(--exact-bg); }
+.carrier__name { grid-area: name; min-width: 0; }
+.carrier__status { grid-area: status; justify-self: end; }
+.carrier__freq {
+  grid-area: freq;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.carrier__freq input { font-variant-numeric: tabular-nums; min-width: 0; }
+.carrier__unit { color: var(--text-muted); font-size: var(--text-sm); }
+.carrier__lock {
+  grid-area: lock;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: var(--tap);
+  min-height: var(--tap);
+  margin: 0;
+}
+.carrier__actions {
+  grid-area: actions;
+  display: flex;
+  gap: var(--space-2);
+}
+.carrier__actions button { flex: 1; }
+.carrier-list__add { width: 100%; margin-top: var(--space-3); }
+
+.settings__summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: var(--tap);
+  justify-content: center;
+}
+.settings__body {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.settings__body label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin: 0;
+}
+.settings__body label:has(input[type='checkbox']) {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+}
+.settings__subhead { margin-top: var(--space-4); }
+.exclusion-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+@media (min-width: 48rem) {
+  .carrier {
+    grid-template-columns: minmax(0, 1fr) 12rem auto auto auto;
+    grid-template-areas: 'name freq lock status actions';
+  }
+  .carrier__actions { flex: none; }
+  .carrier__actions button { flex: none; }
+  .carrier-list__add { width: auto; }
+  .settings__body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
