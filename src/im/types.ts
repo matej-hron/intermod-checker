@@ -2,6 +2,16 @@ export interface Carrier {
   id: string;
   label: string;
   freqKHz: number;
+  /** A locked carrier is never retuned by any automated process. */
+  locked: boolean;
+}
+
+/** A span of the band that a carrier may not occupy. Both bounds inclusive. */
+export interface Exclusion {
+  id: string;
+  label: string;
+  startKHz: number;
+  endKHz: number;
 }
 
 export interface Settings {
@@ -14,6 +24,7 @@ export interface Settings {
   deviationKHz: number;
   minSpacingKHz: number;
   suggestionStepKHz: number;
+  exclusions: Exclusion[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -26,6 +37,7 @@ export const DEFAULT_SETTINGS: Settings = {
   deviationKHz: 0,
   minSpacingKHz: 250,
   suggestionStepKHz: 25,
+  exclusions: [],
 };
 
 export const MAX_ORDER = 9;
@@ -73,11 +85,22 @@ export interface Suggestion {
   failureReason?: string;
 }
 
-export type ValidationField = 'carriers' | 'frequency' | 'settings';
+export type ValidationField = 'carriers' | 'frequency' | 'settings' | 'exclusions';
 
 export interface ValidationIssue {
   field: ValidationField;
   message: string;
   /** Carrier ids the issue applies to; empty for whole-set issues. */
   carrierIds: string[];
+}
+
+export function normalizeExclusion(e: Exclusion): Exclusion {
+  return e.startKHz <= e.endKHz
+    ? e
+    : { ...e, startKHz: e.endKHz, endKHz: e.startKHz };
+}
+
+/** Inclusive on both bounds, per spec §3.2. */
+export function isExcluded(freqKHz: number, exclusions: readonly Exclusion[]): boolean {
+  return exclusions.some((e) => freqKHz >= e.startKHz && freqKHz <= e.endKHz);
 }

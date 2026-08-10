@@ -3,7 +3,7 @@ import { analyze, severityForOrder, effectiveWindowKHz } from '../analyze';
 import { DEFAULT_SETTINGS, type Carrier, type Settings } from '../types';
 
 function carrier(id: string, mhz: number): Carrier {
-  return { id, label: id, freqKHz: Math.round(mhz * 1000) };
+  return { id, label: id, freqKHz: Math.round(mhz * 1000), locked: false };
 }
 
 // The band bounds are widened to 140-320 MHz so the worked examples from the

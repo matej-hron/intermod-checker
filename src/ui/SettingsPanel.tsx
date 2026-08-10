@@ -1,6 +1,7 @@
 import { DEFAULT_SETTINGS } from '../im';
 import { useProjectStore } from '../state/projectStore';
 import { MHzInput } from './MHzInput';
+import { ExclusionEditor } from './ExclusionEditor';
 
 // A <select> whose value matches no option silently renders the first one, so
 // an imported project could display an order the engine is not using. Fold any
@@ -127,6 +128,8 @@ export function SettingsPanel() {
           }
         />
       </label>
+
+      <ExclusionEditor />
 
       <button type="button" onClick={resetSettings}>
         Reset to defaults ({DEFAULT_SETTINGS.lowOrder}–{DEFAULT_SETTINGS.highOrder}

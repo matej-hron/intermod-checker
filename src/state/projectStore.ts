@@ -1,9 +1,13 @@
 import { create } from 'zustand';
 import { useAnalysisStore } from './analysisStore';
+import { useTuneStore } from './tuneStore';
 import {
   DEFAULT_SETTINGS,
+  PROJECT_VERSION,
+  normalizeExclusion,
   parseProject,
   type Carrier,
+  type Exclusion,
   type ProjectFile,
   type Settings,
   type Suggestion,
@@ -24,6 +28,9 @@ interface ProjectState {
   loadProject: (file: ProjectFile) => void;
   applySuggestions: (suggestions: Suggestion[]) => void;
   newProject: () => void;
+  addExclusion: () => void;
+  updateExclusion: (id: string, patch: Partial<Omit<Exclusion, 'id'>>) => void;
+  removeExclusion: (id: string) => void;
 }
 
 function newId(): string {
@@ -32,8 +39,8 @@ function newId(): string {
 
 function initialCarriers(): Carrier[] {
   return [
-    { id: newId(), label: 'Mic 1', freqKHz: 510000 },
-    { id: newId(), label: 'Mic 2', freqKHz: 530000 },
+    { id: newId(), label: 'Mic 1', freqKHz: 510000, locked: false },
+    { id: newId(), label: 'Mic 2', freqKHz: 530000, locked: false },
   ];
 }
 
@@ -63,7 +70,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ version: 1, name, carriers, settings }),
+        JSON.stringify({ version: PROJECT_VERSION, name, carriers, settings }),
       );
     } catch {
       // Storage is full or blocked; the in-memory project still works.
@@ -78,6 +85,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     set(partial);
     persist();
     useAnalysisStore.getState().clear();
+    useTuneStore.getState().clear();
   };
 
   // Renaming changes nothing the analysis depends on, so it must not discard
@@ -90,7 +98,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
   return {
     name: restored?.name ?? 'Untitled',
     carriers: restored?.carriers ?? initialCarriers(),
-    settings: restored?.settings ?? DEFAULT_SETTINGS,
+    settings: restored?.settings ?? { ...DEFAULT_SETTINGS, exclusions: [] },
 
     setName: (name) => updateMeta({ name }),
 
@@ -103,6 +111,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             id: newId(),
             label: `Mic ${carriers.length + 1}`,
             freqKHz: get().settings.bandMinKHz,
+            locked: false,
           },
         ],
       });
@@ -146,6 +155,47 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         carriers: get().carriers.map((c) =>
           byId.has(c.id) ? { ...c, freqKHz: byId.get(c.id) as number } : c,
         ),
+      });
+    },
+
+    addExclusion: () => {
+      const { settings } = get();
+      const middle = Math.round((settings.bandMinKHz + settings.bandMaxKHz) / 2);
+      update({
+        settings: {
+          ...settings,
+          exclusions: [
+            ...settings.exclusions,
+            {
+              id: newId(),
+              label: `Excluded range ${settings.exclusions.length + 1}`,
+              startKHz: middle,
+              endKHz: middle + 1000,
+            },
+          ],
+        },
+      });
+    },
+
+    updateExclusion: (id, patch) => {
+      const { settings } = get();
+      update({
+        settings: {
+          ...settings,
+          exclusions: settings.exclusions.map((e) =>
+            e.id === id ? normalizeExclusion({ ...e, ...patch }) : e,
+          ),
+        },
+      });
+    },
+
+    removeExclusion: (id) => {
+      const { settings } = get();
+      update({
+        settings: {
+          ...settings,
+          exclusions: settings.exclusions.filter((e) => e.id !== id),
+        },
       });
     },
   };

@@ -3,7 +3,7 @@ import { validate } from '../validate';
 import { DEFAULT_SETTINGS, type Carrier } from '../types';
 
 function carrier(id: string, mhz: number): Carrier {
-  return { id, label: id, freqKHz: Math.round(mhz * 1000) };
+  return { id, label: id, freqKHz: Math.round(mhz * 1000), locked: false };
 }
 
 const good = [carrier('a', 510), carrier('b', 530), carrier('c', 560)];
@@ -123,9 +123,97 @@ describe('validate', () => {
 
   it('rejects two carriers sharing an identifier', () => {
     const issues = validate(
-      [carrier('same', 510), { id: 'same', label: 'b', freqKHz: 530000 }],
+      [carrier('same', 510), { id: 'same', label: 'b', freqKHz: 530000, locked: false }],
       DEFAULT_SETTINGS,
     );
     expect(issues.some((i) => /identifier/i.test(i.message))).toBe(true);
+  });
+});
+
+describe('exclusions', () => {
+  const base = { ...DEFAULT_SETTINGS };
+  const carriers: Carrier[] = [
+    { id: 'a', label: 'Mic 1', freqKHz: 510000, locked: false },
+    { id: 'b', label: 'Mic 2', freqKHz: 570000, locked: false },
+  ];
+
+  it('flags a carrier sitting inside an exclusion range', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Local DTV', startKHz: 566000, endKHz: 574000 }],
+    };
+    const issues = validate(carriers, settings);
+    const issue = issues.find((i) => i.carrierIds.includes('b'));
+    expect(issue).toBeDefined();
+    expect(issue?.field).toBe('exclusions');
+    expect(issue?.message).toContain('Local DTV');
+  });
+
+  it('treats the exclusion bounds as inclusive', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Edge', startKHz: 570000, endKHz: 580000 }],
+    };
+    expect(validate(carriers, settings).some((i) => i.carrierIds.includes('b'))).toBe(true);
+  });
+
+  it('flags an exclusion that lies entirely outside the band', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Elsewhere', startKHz: 800000, endKHz: 810000 }],
+    };
+    const issue = validate(carriers, settings).find((i) => i.message.includes('Elsewhere'));
+    expect(issue?.message).toContain('no effect');
+  });
+
+  it('flags an exclusion that covers the whole band', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Everything', startKHz: 400000, endKHz: 800000 }],
+    };
+    const issues = validate(carriers, settings);
+    expect(issues.some((i) => i.message.includes('leaves no usable'))).toBe(true);
+    // finding 1: no spurious per-carrier "inside the excluded range" issues for this exclusion
+    expect(issues.some((i) => i.message.includes('inside the excluded range') && i.message.includes('Everything'))).toBe(false);
+  });
+
+  it('flags an exclusion outside the band with no per-carrier issues (finding 1)', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Elsewhere', startKHz: 800000, endKHz: 810000 }],
+    };
+    const issues = validate(carriers, settings);
+    expect(issues.some((i) => i.message.includes('no effect'))).toBe(true);
+    // no per-carrier noise for an exclusion that already has its own issue
+    expect(issues.some((i) => i.message.includes('inside the excluded range') && i.message.includes('Elsewhere'))).toBe(false);
+  });
+
+  it('flags a reversed exclusion range (finding 2)', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Backwards', startKHz: 574000, endKHz: 566000 }],
+    };
+    const issues = validate(carriers, settings);
+    const issue = issues.find((i) => i.field === 'exclusions' && i.message.includes('Backwards'));
+    expect(issue).toBeDefined();
+    expect(issue?.message).toMatch(/reversed/i);
+  });
+
+  it('accepts a single-frequency exclusion (startKHz === endKHz)', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'SingleFreq', startKHz: 570000, endKHz: 570000 }],
+    };
+    const issues = validate(carriers, settings);
+    // should not produce a reversed-range issue
+    expect(issues.some((i) => i.message.toLowerCase().includes('reversed'))).toBe(false);
+  });
+
+  it('accepts a clean set with a harmless exclusion', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'IEM rack', startKHz: 600000, endKHz: 604000 }],
+    };
+    expect(validate(carriers, settings)).toEqual([]);
   });
 });

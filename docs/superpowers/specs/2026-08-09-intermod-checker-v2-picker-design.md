@@ -1,7 +1,7 @@
 # Intermodulation Checker — v2 Design: Candidate Picker, Locking, Exclusions
 
 Date: 2026-08-09
-Status: approved
+Status: implemented
 Supersedes nothing; extends `2026-08-09-intermod-checker-design.md` (v1).
 
 ## 1. Purpose

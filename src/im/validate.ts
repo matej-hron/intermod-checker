@@ -141,5 +141,59 @@ export function validate(
     }
   }
 
+  const skipPerCarrierExclusion = new Set<string>();
+
+  for (const e of settings.exclusions) {
+    if (!Number.isInteger(e.startKHz) || !Number.isInteger(e.endKHz)) {
+      issues.push({
+        field: 'exclusions',
+        message: `Exclusion "${e.label}" must use whole kilohertz.`,
+        carrierIds: [],
+      });
+      skipPerCarrierExclusion.add(e.id);
+      continue;
+    }
+    if (e.startKHz > e.endKHz) {
+      issues.push({
+        field: 'exclusions',
+        message: `Exclusion "${e.label}" has a reversed range (${(e.startKHz / 1000).toFixed(3)} MHz – ${(e.endKHz / 1000).toFixed(3)} MHz).`,
+        carrierIds: [],
+      });
+      skipPerCarrierExclusion.add(e.id);
+      continue;
+    }
+    if (e.endKHz < settings.bandMinKHz || e.startKHz > settings.bandMaxKHz) {
+      issues.push({
+        field: 'exclusions',
+        message: `Exclusion "${e.label}" is outside the band and has no effect.`,
+        carrierIds: [],
+      });
+      skipPerCarrierExclusion.add(e.id);
+      continue;
+    }
+    if (e.startKHz <= settings.bandMinKHz && e.endKHz >= settings.bandMaxKHz) {
+      issues.push({
+        field: 'exclusions',
+        message: `Exclusion "${e.label}" covers the whole band and leaves no usable frequency.`,
+        carrierIds: [],
+      });
+      skipPerCarrierExclusion.add(e.id);
+      continue;
+    }
+  }
+
+  for (const c of carriers) {
+    const blocking = settings.exclusions.find(
+      (e) => !skipPerCarrierExclusion.has(e.id) && c.freqKHz >= e.startKHz && c.freqKHz <= e.endKHz,
+    );
+    if (blocking !== undefined) {
+      issues.push({
+        field: 'exclusions',
+        message: `${(c.freqKHz / 1000).toFixed(3)} MHz is inside the excluded range "${blocking.label}".`,
+        carrierIds: [c.id],
+      });
+    }
+  }
+
   return issues;
 }

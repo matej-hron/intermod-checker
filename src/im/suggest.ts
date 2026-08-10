@@ -1,64 +1,11 @@
-import { analyze, effectiveWindowKHz } from './analyze';
-import { scanProducts } from './products';
+import { analyze } from './analyze';
+import { evaluateCandidate } from './evaluate';
 import type { Carrier, Settings, Suggestion } from './types';
 
 export const MAX_CANDIDATES = 2000;
 
-/**
- * True when `candidateKHz` for `index` introduces no hit involving that
- * carrier. Aborts on the first hit found.
- *
- * Only hits the moved carrier is party to count, per spec 4.3: the candidate
- * must introduce no hit, and a conflict between two other carriers is not
- * something this candidate introduced. Because suggestions are solved
- * sequentially, the carriers later in the queue are still unfixed while this
- * one is searched, so judging a candidate on the whole set's cleanliness would
- * reject every candidate for every carrier whenever more than one independent
- * conflict exists.
- *
- * Self-involving products are ignored for the same reason `analyze` keeps them
- * out of `conflictedIds`: a product a carrier contributes to is its own
- * self-mixing, not a reason to reject an otherwise clean frequency.
- */
-function isCandidateClean(
-  freqs: number[],
-  index: number,
-  candidateKHz: number,
-  settings: Settings,
-): boolean {
-  const original = freqs[index];
-  freqs[index] = candidateKHz;
-  let clean = true;
-
-  scanProducts(freqs, settings, (productKHz, coeffs, order) => {
-    const window = effectiveWindowKHz(order, settings);
-    const moverContributes = coeffs[index] !== 0;
-    for (let v = 0; v < freqs.length; v += 1) {
-      if (coeffs[v] !== 0) continue;
-      if (v !== index && !moverContributes) continue;
-      if (Math.abs(freqs[v] - productKHz) <= window) {
-        clean = false;
-        return false;
-      }
-    }
-  });
-
-  freqs[index] = original;
-  return clean;
-}
-
-function respectsSpacing(
-  freqs: readonly number[],
-  index: number,
-  candidateKHz: number,
-  settings: Settings,
-): boolean {
-  for (let i = 0; i < freqs.length; i += 1) {
-    if (i === index) continue;
-    if (Math.abs(freqs[i] - candidateKHz) < settings.minSpacingKHz) return false;
-  }
-  return true;
-}
+const LOCKED_REASON =
+  'This frequency is locked, so it was left where it is. Unlock it to let the tool retune it, or move one of the other transmitters instead.';
 
 export function suggest(
   carriers: readonly Carrier[],
@@ -81,6 +28,22 @@ export function suggest(
     if (index === undefined) return;
 
     const fromKHz = working[index];
+
+    // A locked carrier still counts as context for everyone else, but nothing
+    // may retune it. Reporting it explicitly matters: an empty result here
+    // would read as "nothing to fix" for a set that is demonstrably broken.
+    if (carriers[index].locked) {
+      suggestions.push({
+        carrierId,
+        fromKHz,
+        toKHz: null,
+        distanceKHz: null,
+        failureReason: LOCKED_REASON,
+      });
+      onProgress?.((position + 1) / total);
+      return;
+    }
+
     const step = settings.suggestionStepKHz;
     let found: number | null = null;
     let examined = 0;
@@ -93,8 +56,18 @@ export function suggest(
       if (candidate < settings.bandMinKHz || candidate > settings.bandMaxKHz) {
         continue;
       }
-      if (!respectsSpacing(working, index, candidate, settings)) continue;
-      if (!isCandidateClean(working, index, candidate, settings)) continue;
+
+      // `first-hit` keeps v1's early abort: this caller only asks "is it
+      // completely clean?", so resolving every criterion would be wasted work.
+      const evaluation = evaluateCandidate(
+        working,
+        index,
+        candidate,
+        settings,
+        carriers,
+        'first-hit',
+      );
+      if (evaluation.worst !== 'clear') continue;
 
       found = candidate;
     }
@@ -105,7 +78,7 @@ export function suggest(
         fromKHz,
         toKHz: null,
         distanceKHz: null,
-        failureReason: `No interference-free frequency was found within ${examined} candidates. Widen the band, lower the highest order, or reduce the number of transmitters.`,
+        failureReason: `No interference-free frequency was found within ${examined} candidates. Widen the band, lower the highest order, reduce the number of transmitters, or remove an exclusion.`,
       });
     } else {
       working[index] = found;

@@ -1,6 +1,7 @@
 import { MAX_CARRIERS } from '../im';
 import { useProjectStore } from '../state/projectStore';
 import { useAnalysisStore } from '../state/analysisStore';
+import { useViewStore } from '../state/viewStore';
 import { MHzInput } from './MHzInput';
 
 export function FrequencyTable() {
@@ -10,6 +11,7 @@ export function FrequencyTable() {
   const removeCarrier = useProjectStore((s) => s.removeCarrier);
   const result = useAnalysisStore((s) => s.result);
   const issues = useAnalysisStore((s) => s.issues);
+  const openTune = useViewStore((s) => s.openTune);
 
   const conflicted = new Set(result?.conflictedIds ?? []);
   const flagged = new Set(issues.flatMap((i) => i.carrierIds));
@@ -23,6 +25,7 @@ export function FrequencyTable() {
             <th>#</th>
             <th>Device</th>
             <th>Frequency (MHz)</th>
+            <th>Lock</th>
             <th>Status</th>
             <th />
           </tr>
@@ -51,6 +54,19 @@ export function FrequencyTable() {
                 />
               </td>
               <td>
+                <label className="lock">
+                  <input
+                    type="checkbox"
+                    checked={carrier.locked}
+                    onChange={(e) =>
+                      updateCarrier(carrier.id, { locked: e.target.checked })
+                    }
+                    aria-label={`Lock the frequency of ${carrier.label}`}
+                  />
+                  <span aria-hidden="true">{carrier.locked ? '🔒' : '🔓'}</span>
+                </label>
+              </td>
+              <td>
                 {conflicted.has(carrier.id) ? (
                   <span className="badge badge--bad">Conflict</span>
                 ) : result ? (
@@ -60,6 +76,9 @@ export function FrequencyTable() {
                 )}
               </td>
               <td>
+                <button type="button" onClick={() => openTune(carrier.id)} aria-label={`Tune ${carrier.label}`}>
+                  Tune
+                </button>
                 <button
                   type="button"
                   onClick={() => removeCarrier(carrier.id)}
