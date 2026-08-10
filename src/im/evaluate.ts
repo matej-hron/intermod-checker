@@ -1,4 +1,3 @@
-import { effectiveWindowKHz } from './analyze';
 import { scanProducts } from './products';
 import {
   EXCLUSION_CRITERION,
@@ -62,9 +61,13 @@ export function evaluateCandidate(
   carriers: readonly Carrier[],
   mode: 'full' | 'first-hit' = 'full',
 ): CandidateEvaluation {
-  const interference = realizableCriteria(settings);
+  // `full` mode reports every criterion, so it seeds them all to `clear` up
+  // front. `first-hit` only ever needs the criterion of the single hit it
+  // returns on, so it skips rebuilding the realizable-criteria array and the
+  // per-key seeding on every one of `suggest()`'s thousands of candidates.
+  const interference = mode === 'full' ? realizableCriteria(settings) : null;
   const verdicts: Record<CriterionKey, Verdict> = {};
-  for (const key of interference) verdicts[key] = 'clear';
+  if (interference !== null) for (const key of interference) verdicts[key] = 'clear';
 
   let spacing: Verdict = 'clear';
   for (let i = 0; i < freqs.length; i += 1) {
@@ -100,22 +103,40 @@ export function evaluateCandidate(
   const original = freqs[index];
   freqs[index] = candidateKHz;
 
+  const full = mode === 'full';
+  const nearWindow = settings.nearHitWindowKHz;
+  const deviation = settings.deviationKHz;
+
   scanProducts(freqs, settings, (productKHz, coeffs, order) => {
-    const key = criterionKey(txBucket(coeffs), order);
+    // The criterion key is a per-product string (`criterionKey` templates one),
+    // so building it on every product visit allocates in the scan's hottest
+    // loop. `full` mode needs it up front for the early skip below; `first-hit`
+    // returns on the first hit and never consults an already-`exact` criterion,
+    // so it derives the key lazily — only when a hit actually lands.
+    let key = full ? criterionKey(txBucket(coeffs), order) : '';
     // Already at the worst verdict: nothing this product could add changes the
     // criterion, and it cannot improve `explanation` either, because order is
     // fixed within a criterion and the offset is already zero.
-    if (verdicts[key] === 'exact') return;
+    if (full && verdicts[key] === 'exact') return;
 
-    const window = effectiveWindowKHz(order, settings);
+    // Inlined `effectiveWindowKHz` — a function call in the scan's hottest loop.
+    const scaled = order * deviation;
+    const window = scaled > nearWindow ? scaled : nearWindow;
     const moverContributes = coeffs[index] !== 0;
 
-    for (let v = 0; v < freqs.length; v += 1) {
+    // Only products the mover is party to can touch a carrier other than the
+    // mover itself, so when it does not contribute the sole possible victim is
+    // the mover — skip straight to it instead of scanning every carrier.
+    const first = moverContributes ? 0 : index;
+    const past = moverContributes ? freqs.length : index + 1;
+    for (let v = first; v < past; v += 1) {
       if (coeffs[v] !== 0) continue;
       if (v !== index && !moverContributes) continue;
 
       const offset = Math.abs(freqs[v] - productKHz);
       if (offset > window) continue;
+
+      if (!full) key = criterionKey(txBucket(coeffs), order);
 
       const verdict: Verdict = offset === 0 ? 'exact' : 'near';
       const previous = verdicts[key];
@@ -141,10 +162,10 @@ export function evaluateCandidate(
         best = { order, verdict, offsetKHz: offset, contributors };
       }
 
-      if (mode === 'first-hit') return false;
+      if (!full) return false;
     }
 
-    if (exactCount >= interference.length) return false;
+    if (interference !== null && exactCount >= interference.length) return false;
   });
 
   freqs[index] = original;
