@@ -85,4 +85,26 @@ describe('countByVerdict', () => {
     ];
     expect(countByVerdict(evaluations)).toEqual({ all: 3, clear: 2, problem: 1 });
   });
+
+  it('counts the current frequency in both buckets so labels match the rows shown', () => {
+    const evaluations = [
+      evaluation(500000, 'exact'),
+      evaluation(500025, 'clear'),
+      evaluation(500050, 'clear'),
+    ];
+    const counts = countByVerdict(evaluations, 500000);
+    expect(counts).toEqual({ all: 3, clear: 3, problem: 1 });
+    expect(filterEvaluations(evaluations, 'clear', 500000)).toHaveLength(counts.clear);
+    expect(filterEvaluations(evaluations, 'problem', 500000)).toHaveLength(counts.problem);
+  });
+
+  it('leaves a clear current frequency counted once in each bucket', () => {
+    const evaluations = [
+      evaluation(500000, 'clear'),
+      evaluation(500025, 'exact'),
+    ];
+    const counts = countByVerdict(evaluations, 500000);
+    expect(counts).toEqual({ all: 2, clear: 1, problem: 2 });
+    expect(filterEvaluations(evaluations, 'problem', 500000)).toHaveLength(counts.problem);
+  });
 });

@@ -42,7 +42,7 @@ export function CandidateList({ carrier }: { carrier: Carrier }) {
     );
   }
 
-  const counts = countByVerdict(evaluations);
+  const counts = countByVerdict(evaluations, currentKHz);
   const shown = filterEvaluations(evaluations, filter, currentKHz);
 
   return (

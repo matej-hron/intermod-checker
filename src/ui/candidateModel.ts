@@ -44,14 +44,25 @@ export function filterEvaluations(
   });
 }
 
-export function countByVerdict(evaluations: CandidateEvaluation[]): {
+/**
+ * Counts what each filter will actually show, which is why it needs the current
+ * frequency: `filterEvaluations` always keeps that one candidate, so counting
+ * by verdict alone would label a tab with one fewer row than it renders.
+ */
+export function countByVerdict(
+  evaluations: CandidateEvaluation[],
+  currentKHz: number | null = null,
+): {
   all: number;
   clear: number;
   problem: number;
 } {
   let clear = 0;
+  let problem = 0;
   for (const evaluation of evaluations) {
-    if (evaluation.worst === 'clear') clear += 1;
+    const isCurrent = currentKHz !== null && evaluation.freqKHz === currentKHz;
+    if (evaluation.worst === 'clear' || isCurrent) clear += 1;
+    if (evaluation.worst !== 'clear' || isCurrent) problem += 1;
   }
-  return { all: evaluations.length, clear, problem: evaluations.length - clear };
+  return { all: evaluations.length, clear, problem };
 }
