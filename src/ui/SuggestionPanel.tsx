@@ -37,6 +37,7 @@ export function SuggestionPanel() {
                 <em>{suggestion.failureReason}</em>{' '}
                 <button
                   type="button"
+                  aria-label={`Choose a frequency for ${labelFor(suggestion.carrierId)}`}
                   onClick={() => openTune(suggestion.carrierId)}
                 >
                   Choose myself
@@ -57,6 +58,7 @@ export function SuggestionPanel() {
                 </button>{' '}
                 <button
                   type="button"
+                  aria-label={`Choose a frequency for ${labelFor(suggestion.carrierId)}`}
                   onClick={() => openTune(suggestion.carrierId)}
                 >
                   Choose myself

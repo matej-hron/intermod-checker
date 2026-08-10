@@ -98,7 +98,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
   return {
     name: restored?.name ?? 'Untitled',
     carriers: restored?.carriers ?? initialCarriers(),
-    settings: restored?.settings ?? DEFAULT_SETTINGS,
+    settings: restored?.settings ?? { ...DEFAULT_SETTINGS, exclusions: [] },
 
     setName: (name) => updateMeta({ name }),
 

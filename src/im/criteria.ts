@@ -63,7 +63,7 @@ export function worseVerdict(a: Verdict, b: Verdict): Verdict {
   return RANK[a] >= RANK[b] ? a : b;
 }
 
-function ordinal(order: number): string {
+export function ordinal(order: number): string {
   if (order === 1) return '1st';
   if (order === 2) return '2nd';
   if (order === 3) return '3rd';

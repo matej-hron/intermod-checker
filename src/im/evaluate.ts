@@ -4,6 +4,7 @@ import {
   EXCLUSION_CRITERION,
   SPACING_CRITERION,
   criterionKey,
+  ordinal,
   realizableCriteria,
   txBucket,
   verdictRank,
@@ -29,12 +30,6 @@ export interface CandidateEvaluation {
   explanation: CandidateExplanation | null;
 }
 
-function ordinal(order: number): string {
-  if (order === 1) return '1st';
-  if (order === 2) return '2nd';
-  if (order === 3) return '3rd';
-  return `${order}th`;
-}
 
 export function explanationText(explanation: CandidateExplanation | null): string {
   if (explanation === null) return 'Clear';

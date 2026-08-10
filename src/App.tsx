@@ -63,7 +63,7 @@ export default function App() {
           type="button"
           onClick={() => {
             void run(carriers, settings);
-            goTo('results');
+            navigateTo('results');
           }}
           disabled={status === 'running'}
         >

@@ -166,7 +166,7 @@ button { margin-right: 0.5rem; }
 .candidate-row--best { outline: 2px solid #2a842a66; }
 .candidate-pick { font: inherit; background: transparent; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
 .candidate-pick:disabled { text-decoration: none; cursor: default; color: inherit; }
-.num { text-align: right; }
+.candidate-grid td.num { text-align: right; }
 .dot { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 50%; box-sizing: border-box; }
 .dot--clear { border: 1px solid #2a842a88; background: transparent; }
 .dot--near { border: 3px solid #d98910; background: transparent; }
