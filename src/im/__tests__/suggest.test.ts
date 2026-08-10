@@ -167,3 +167,61 @@ describe('suggest', () => {
     expect(suggestions.some((s) => s.toKHz !== null)).toBe(true);
   });
 });
+
+describe('locking', () => {
+  it('never proposes a new frequency for a locked carrier', () => {
+    const carriers = [
+      carrier('a', 510),
+      carrier('b', 511),
+      { ...carrier('c', 509), locked: true },
+    ];
+    for (const s of suggest(carriers, settings)) {
+      if (s.carrierId !== 'c') continue;
+      expect(s.toKHz).toBeNull();
+      expect(s.failureReason).toContain('locked');
+    }
+  });
+
+  it('treats a locked carrier as fixed context when solving the others', () => {
+    const carriers = [
+      { ...carrier('a', 510), locked: true },
+      carrier('b', 511),
+      carrier('c', 509),
+    ];
+    const suggestions = suggest(carriers, settings);
+    // a stays put; b and c are moved around it.
+    const a = suggestions.find((s) => s.carrierId === 'a');
+    if (a !== undefined) expect(a.toKHz).toBeNull();
+    const applied = carriers.map((c) => {
+      const s = suggestions.find((x) => x.carrierId === c.id);
+      return s && s.toKHz !== null ? { ...c, freqKHz: s.toKHz } : c;
+    });
+    expect(applied.find((c) => c.id === 'a')?.freqKHz).toBe(510000);
+  });
+
+  it('explains itself when every conflicted carrier is locked', () => {
+    const carriers = [
+      { ...carrier('a', 510), locked: true },
+      { ...carrier('b', 511), locked: true },
+      { ...carrier('c', 509), locked: true },
+    ];
+    const suggestions = suggest(carriers, settings);
+    expect(suggestions.length).toBeGreaterThan(0);
+    expect(suggestions.every((s) => s.toKHz === null)).toBe(true);
+    expect(suggestions.every((s) => (s.failureReason ?? '').includes('locked'))).toBe(true);
+  });
+});
+
+describe('exclusions', () => {
+  it('never proposes a frequency inside an excluded range', () => {
+    const excluded: Settings = {
+      ...settings,
+      exclusions: [{ id: 'x', label: 'DTV', startKHz: 508000, endKHz: 510500 }],
+    };
+    const carriers = [carrier('a', 510), carrier('b', 511), carrier('c', 509)];
+    for (const s of suggest(carriers, excluded)) {
+      if (s.toKHz === null) continue;
+      expect(s.toKHz >= 508000 && s.toKHz <= 510500).toBe(false);
+    }
+  });
+});

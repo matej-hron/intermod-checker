@@ -53,9 +53,11 @@ export function explanationText(explanation: CandidateExplanation | null): strin
  * `first-hit` result must never be rendered as a grid row.
  *
  * Only products the moved carrier is party to count, and self-involving
- * products are ignored — see spec §4.3 and the note in `suggest.ts`. Judging a
- * candidate on the whole set's cleanliness rejects every candidate for every
- * carrier once two independent conflicts exist.
+ * products are ignored — see spec §4.3. Judging a candidate on the whole set's
+ * cleanliness rejects every candidate for every carrier once two independent
+ * conflicts exist. `suggest()` relies on this: while it solves carriers
+ * sequentially the later ones are still unfixed, so their conflicts are present
+ * in the set but must not disqualify the candidate under evaluation.
  */
 export function evaluateCandidate(
   freqs: number[],
