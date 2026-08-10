@@ -6,10 +6,8 @@ import {
   kHzToMHzText,
   type Carrier,
 } from '../im';
-import { useAnalysisStore } from '../state/analysisStore';
-import { useProjectStore } from '../state/projectStore';
-import { useTuneStore } from '../state/tuneStore';
 import { VerdictDot } from './VerdictDot';
+import { useCandidateModel } from './useCandidateModel';
 
 function deltaText(offsetKHz: number): string {
   if (offsetKHz === 0) return '0';
@@ -17,13 +15,7 @@ function deltaText(offsetKHz: number): string {
 }
 
 export function CandidateGrid({ carrier }: { carrier: Carrier }) {
-  const settings = useProjectStore((s) => s.settings);
-  const updateCarrier = useProjectStore((s) => s.updateCarrier);
-  const evaluations = useTuneStore((s) => s.evaluations);
-  const criteria = useTuneStore((s) => s.criteria);
-  const currentKHz = useTuneStore((s) => s.currentKHz);
-
-  const showExclusion = settings.exclusions.length > 0;
+  const { evaluations, criteria, currentKHz, showExclusion, nearestClear, locked, apply } = useCandidateModel(carrier);
 
   if (evaluations.length === 0) {
     return (
@@ -34,34 +26,10 @@ export function CandidateGrid({ carrier }: { carrier: Carrier }) {
     );
   }
 
-  // Evaluations arrive sorted by ascending frequency, which is how a spectrum
-  // reads; the Δ column carries the distance that nearest-first ordering would
-  // otherwise convey.
-  let bestKHz: number | null = null;
-  for (const evaluation of evaluations) {
-    if (evaluation.worst !== 'clear') continue;
-    if (currentKHz !== null && evaluation.freqKHz === currentKHz) continue;
-    if (
-      bestKHz === null ||
-      (currentKHz !== null &&
-        Math.abs(evaluation.freqKHz - currentKHz) < Math.abs(bestKHz - currentKHz))
-    ) {
-      bestKHz = evaluation.freqKHz;
-    }
-  }
-
-  const apply = (freqKHz: number): void => {
-    if (carrier.locked) return;
-    updateCarrier(carrier.id, { freqKHz });
-    // A displayed verdict must always describe the real configuration, so the
-    // analysis is re-run against the frequencies that are now actually set.
-    const { carriers, settings: next } = useProjectStore.getState();
-    void useAnalysisStore.getState().run(carriers, next);
-  };
 
   return (
     <>
-      {bestKHz === null && (
+      {nearestClear === null && (
         <p className="hint">
           Nothing in this range is completely clear. Widen the search, remove an
           excluded range, or move one of the other transmitters.
@@ -96,7 +64,7 @@ export function CandidateGrid({ carrier }: { carrier: Carrier }) {
         <tbody>
           {evaluations.map((evaluation) => {
             const isCurrent = evaluation.freqKHz === currentKHz;
-            const isBest = evaluation.freqKHz === bestKHz;
+            const isBest = evaluation.freqKHz === nearestClear;
             const classes = ['candidate-row'];
             if (isCurrent) classes.push('candidate-row--current');
             if (isBest) classes.push('candidate-row--best');
@@ -107,7 +75,7 @@ export function CandidateGrid({ carrier }: { carrier: Carrier }) {
                   <button
                     type="button"
                     className="candidate-pick"
-                    disabled={carrier.locked || isCurrent}
+                    disabled={locked || isCurrent}
                     onClick={() => apply(evaluation.freqKHz)}
                   >
                     {kHzToMHzText(evaluation.freqKHz)}
