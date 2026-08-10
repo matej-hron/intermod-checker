@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { kHzToMHzText } from '../im';
 import { useProjectStore } from '../state/projectStore';
 import { useTuneStore } from '../state/tuneStore';
+import { CandidateGrid } from './CandidateGrid';
 import { ContextStrip } from './ContextStrip';
 
 export function TuneView() {
@@ -13,10 +14,8 @@ export function TuneView() {
   const halfWidthKHz = useTuneStore((s) => s.halfWidthKHz);
   const status = useTuneStore((s) => s.status);
   const fraction = useTuneStore((s) => s.fraction);
-  const evaluations = useTuneStore((s) => s.evaluations);
   const issues = useTuneStore((s) => s.issues);
   const errorMessage = useTuneStore((s) => s.errorMessage);
-  const select = useTuneStore((s) => s.select);
   const run = useTuneStore((s) => s.run);
   const widen = useTuneStore((s) => s.widen);
 
@@ -25,11 +24,17 @@ export function TuneView() {
   // Re-evaluate whenever there is a selection but no results — which is the
   // state `select()` leaves behind, and the one `projectStore.update()` leaves
   // behind after a frequency is applied. One effect covers both.
+  //
+  // Guard on the resolved carrier, not just the id: `tuneStore.clear()` keeps
+  // `carrierId` so the grid refreshes after applying a candidate, but a deleted
+  // carrier leaves an id that no longer resolves. Firing a worker request for a
+  // dead id would surface a spurious error while the view shows "Pick a
+  // transmitter".
   useEffect(() => {
-    if (carrierId === null) return;
+    if (carrier === null) return;
     if (status !== 'idle') return;
     void run(carriers, settings);
-  }, [carrierId, status, carriers, settings, run]);
+  }, [carrier, status, carriers, settings, run]);
 
   if (carriers.length === 0) {
     return (
@@ -68,23 +73,24 @@ export function TuneView() {
             </p>
           )}
 
-          {status === 'running' && (
-            <p>Evaluating candidates… {Math.round(fraction * 100)}%</p>
-          )}
+          <div aria-live="polite">
+            {status === 'running' && (
+              <p>Evaluating candidates… {Math.round(fraction * 100)}%</p>
+            )}
 
-          {errorMessage !== null && <p className="error">{errorMessage}</p>}
-          {issues.length > 0 && (
-            <ul className="error">
-              {issues.map((issue, i) => (
-                <li key={i}>{issue.message}</li>
-              ))}
-            </ul>
-          )}
+            {errorMessage !== null && <p className="error">{errorMessage}</p>}
+            {issues.length > 0 && (
+              <ul className="error">
+                {issues.map((issue, i) => (
+                  <li key={i}>{issue.message}</li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           {status === 'done' && (
             <>
-              {/* Replaced by <CandidateGrid /> in the next task. */}
-              <p>{evaluations.length} candidates evaluated.</p>
+              <CandidateGrid carrier={carrier} />
               <button
                 type="button"
                 onClick={() => void widen(carriers, settings)}
@@ -96,13 +102,6 @@ export function TuneView() {
           )}
         </>
       )}
-
-      {/* TEMPORARY: scaffolding for Task 10 verification — Task 11 Step 4 deletes this paragraph. */}
-      <p className="hint">
-        <button type="button" onClick={() => select(carriers[0].id)}>
-          Tune the first transmitter
-        </button>
-      </p>
     </section>
   );
 }

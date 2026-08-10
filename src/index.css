@@ -157,3 +157,17 @@ button { margin-right: 0.5rem; }
 .context-chip__label { font-weight: 600; }
 .context-chip__freq { font-variant-numeric: tabular-nums; }
 .context-chip__state { font-size: 0.75rem; color: #888; }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+.candidate-grid { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.candidate-grid th, .candidate-grid td { text-align: left; padding: 0.25rem 0.5rem; border-bottom: 1px solid #8882; white-space: nowrap; }
+.candidate-grid thead th { font-size: 0.8rem; color: #888; }
+.candidate-row--current { background: #8882; }
+.candidate-row--best { outline: 2px solid #2a842a66; }
+.candidate-pick { font: inherit; background: transparent; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+.candidate-pick:disabled { text-decoration: none; cursor: default; color: inherit; }
+.num { text-align: right; }
+.dot { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 50%; box-sizing: border-box; }
+.dot--clear { border: 1px solid #2a842a88; background: transparent; }
+.dot--near { border: 3px solid #d98910; background: transparent; }
+.dot--exact { border: 1px solid #d33; background: #d33; }
