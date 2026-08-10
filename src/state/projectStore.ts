@@ -1,10 +1,13 @@
 import { create } from 'zustand';
 import { useAnalysisStore } from './analysisStore';
+import { useTuneStore } from './tuneStore';
 import {
   DEFAULT_SETTINGS,
   PROJECT_VERSION,
+  normalizeExclusion,
   parseProject,
   type Carrier,
+  type Exclusion,
   type ProjectFile,
   type Settings,
   type Suggestion,
@@ -25,6 +28,9 @@ interface ProjectState {
   loadProject: (file: ProjectFile) => void;
   applySuggestions: (suggestions: Suggestion[]) => void;
   newProject: () => void;
+  addExclusion: () => void;
+  updateExclusion: (id: string, patch: Partial<Omit<Exclusion, 'id'>>) => void;
+  removeExclusion: (id: string) => void;
 }
 
 function newId(): string {
@@ -79,6 +85,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     set(partial);
     persist();
     useAnalysisStore.getState().clear();
+    useTuneStore.getState().clear();
   };
 
   // Renaming changes nothing the analysis depends on, so it must not discard
@@ -148,6 +155,47 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         carriers: get().carriers.map((c) =>
           byId.has(c.id) ? { ...c, freqKHz: byId.get(c.id) as number } : c,
         ),
+      });
+    },
+
+    addExclusion: () => {
+      const { settings } = get();
+      const middle = Math.round((settings.bandMinKHz + settings.bandMaxKHz) / 2);
+      update({
+        settings: {
+          ...settings,
+          exclusions: [
+            ...settings.exclusions,
+            {
+              id: newId(),
+              label: `Excluded range ${settings.exclusions.length + 1}`,
+              startKHz: middle,
+              endKHz: middle + 1000,
+            },
+          ],
+        },
+      });
+    },
+
+    updateExclusion: (id, patch) => {
+      const { settings } = get();
+      update({
+        settings: {
+          ...settings,
+          exclusions: settings.exclusions.map((e) =>
+            e.id === id ? normalizeExclusion({ ...e, ...patch }) : e,
+          ),
+        },
+      });
+    },
+
+    removeExclusion: (id) => {
+      const { settings } = get();
+      update({
+        settings: {
+          ...settings,
+          exclusions: settings.exclusions.filter((e) => e.id !== id),
+        },
       });
     },
   };
