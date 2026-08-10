@@ -3,6 +3,10 @@
 // it gets an executable check rather than an eyeball.
 const { chromium } = require('playwright-core');
 
+// Ports are often contested, and `vite preview` silently falls back to another
+// one. Pass the URL it actually printed: npm run check:viewport -- http://localhost:4174/
+const TARGET = process.argv[2] || process.env.CHECK_URL || 'http://localhost:4173/';
+
 const WIDTHS = [
   { name: 'phone', width: 390, height: 844 },
   { name: 'tablet', width: 768, height: 1024 },
@@ -17,7 +21,7 @@ const WIDTHS = [
     const page = await browser.newPage({
       viewport: { width: size.width, height: size.height },
     });
-    await page.goto('http://localhost:4173/', { waitUntil: 'networkidle' });
+    await page.goto(TARGET, { waitUntil: 'networkidle' });
 
     // Seed: add carriers and set colliding frequencies so Tune has data.
     for (let i = 0; i < 6; i++) {

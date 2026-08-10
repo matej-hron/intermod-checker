@@ -127,6 +127,16 @@ npm test           # engine test suite (vitest)
 npm run typecheck  # tsc -b --noEmit
 ```
 
+To re-check the mobile layout, serve the production build and point the viewport
+check at it. It asserts that no view overflows at 390, 768 or 1280 px and that
+nothing on a phone is smaller than a 44 px touch target:
+
+```bash
+npm run build
+npx vite preview                                  # note the port it prints
+npm run check:viewport -- http://localhost:4173/  # pass that port
+```
+
 ## Settings
 
 | Setting | Default | Meaning |
