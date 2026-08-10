@@ -1,6 +1,8 @@
 import type {
   AnalysisResult,
+  CandidateEvaluation,
   Carrier,
+  CriterionKey,
   Settings,
   Suggestion,
   ValidationIssue,
@@ -13,12 +15,21 @@ export interface RunRequest {
   settings: Settings;
 }
 
-export type WorkerRequest = RunRequest;
+export interface TuneRequest {
+  type: 'tune';
+  runId: number;
+  carriers: Carrier[];
+  settings: Settings;
+  carrierId: string;
+  halfWidthKHz: number;
+}
+
+export type WorkerRequest = RunRequest | TuneRequest;
 
 export interface ProgressResponse {
   type: 'progress';
   runId: number;
-  phase: 'analyze' | 'suggest';
+  phase: 'analyze' | 'suggest' | 'tune';
   fraction: number;
 }
 
@@ -41,8 +52,20 @@ export interface ErrorResponse {
   message: string;
 }
 
+export interface TuneDoneResponse {
+  type: 'tune-done';
+  runId: number;
+  carrierId: string;
+  currentKHz: number;
+  /** Interference criteria worth a column, already filtered and ordered. */
+  criteria: CriterionKey[];
+  /** Sorted by ascending frequency, ready to render. */
+  evaluations: CandidateEvaluation[];
+}
+
 export type WorkerResponse =
   | ProgressResponse
   | DoneResponse
   | InvalidResponse
-  | ErrorResponse;
+  | ErrorResponse
+  | TuneDoneResponse;

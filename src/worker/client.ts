@@ -1,20 +1,29 @@
 import type {
   AnalysisResult,
+  CandidateEvaluation,
   Carrier,
+  CriterionKey,
   Settings,
   Suggestion,
   ValidationIssue,
 } from '../im';
-import type { WorkerResponse } from './protocol';
+import type { WorkerRequest, WorkerResponse } from './protocol';
 
 export interface WorkerProgress {
-  phase: 'analyze' | 'suggest';
+  phase: 'analyze' | 'suggest' | 'tune';
   fraction: number;
 }
 
 export interface WorkerRunResult {
   result: AnalysisResult;
   suggestions: Suggestion[];
+}
+
+export interface WorkerTuneResult {
+  carrierId: string;
+  currentKHz: number;
+  criteria: CriterionKey[];
+  evaluations: CandidateEvaluation[];
 }
 
 export class AnalysisCancelledError extends Error {
@@ -51,11 +60,11 @@ export class AnalysisClient {
   private nextRunId = 1;
   private rejectActive: ((reason: Error) => void) | null = null;
 
-  run(
-    carriers: Carrier[],
-    settings: Settings,
+  private execute<T>(
+    build: (runId: number) => WorkerRequest,
     onProgress: (progress: WorkerProgress) => void,
-  ): Promise<WorkerRunResult> {
+    extract: (message: WorkerResponse) => T | undefined,
+  ): Promise<T> {
     this.cancel();
 
     const worker = createWorker();
@@ -63,7 +72,7 @@ export class AnalysisClient {
     const runId = this.nextRunId;
     this.nextRunId += 1;
 
-    return new Promise<WorkerRunResult>((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       this.rejectActive = reject;
 
       // Called on every settling path so a terminated worker can never deliver
@@ -79,23 +88,25 @@ export class AnalysisClient {
         const message = event.data;
         if (message.runId !== runId) return;
 
-        switch (message.type) {
-          case 'progress':
-            onProgress({ phase: message.phase, fraction: message.fraction });
-            break;
-          case 'done':
-            finish();
-            resolve({ result: message.result, suggestions: message.suggestions });
-            break;
-          case 'invalid':
-            finish();
-            reject(new AnalysisInvalidError(message.issues));
-            break;
-          case 'error':
-            finish();
-            reject(new Error(message.message));
-            break;
+        if (message.type === 'progress') {
+          onProgress({ phase: message.phase, fraction: message.fraction });
+          return;
         }
+        if (message.type === 'invalid') {
+          finish();
+          reject(new AnalysisInvalidError(message.issues));
+          return;
+        }
+        if (message.type === 'error') {
+          finish();
+          reject(new Error(message.message));
+          return;
+        }
+
+        const value = extract(message);
+        if (value === undefined) return;
+        finish();
+        resolve(value);
       };
 
       worker.onerror = () => {
@@ -108,8 +119,45 @@ export class AnalysisClient {
         reject(new Error('The analysis worker sent a message that could not be read.'));
       };
 
-      worker.postMessage({ type: 'run', runId, carriers, settings });
+      worker.postMessage(build(runId));
     });
+  }
+
+  run(
+    carriers: Carrier[],
+    settings: Settings,
+    onProgress: (progress: WorkerProgress) => void,
+  ): Promise<WorkerRunResult> {
+    return this.execute<WorkerRunResult>(
+      (runId) => ({ type: 'run', runId, carriers, settings }),
+      onProgress,
+      (message) =>
+        message.type === 'done'
+          ? { result: message.result, suggestions: message.suggestions }
+          : undefined,
+    );
+  }
+
+  tune(
+    carriers: Carrier[],
+    settings: Settings,
+    carrierId: string,
+    halfWidthKHz: number,
+    onProgress: (progress: WorkerProgress) => void,
+  ): Promise<WorkerTuneResult> {
+    return this.execute<WorkerTuneResult>(
+      (runId) => ({ type: 'tune', runId, carriers, settings, carrierId, halfWidthKHz }),
+      onProgress,
+      (message) =>
+        message.type === 'tune-done'
+          ? {
+              carrierId: message.carrierId,
+              currentKHz: message.currentKHz,
+              criteria: message.criteria,
+              evaluations: message.evaluations,
+            }
+          : undefined,
+    );
   }
 
   cancel(): void {
