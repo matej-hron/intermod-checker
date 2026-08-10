@@ -1,9 +1,24 @@
 import { useState } from 'react';
-import { formatProduct, kHzToMHzText, type Hit } from '../im';
+import { carrierLetter, formatProduct, kHzToMHzText, type Hit } from '../im';
 import { useAnalysisStore } from '../state/analysisStore';
 import { useProjectStore } from '../state/projectStore';
 
-function HitRow({ hit }: { hit: Hit }) {
+/**
+ * A formula reads "2A - B", so it is meaningless without knowing which device is
+ * A. Only the carriers this product actually mixes are named, to keep the key
+ * short on a phone.
+ */
+function contributors(coeffs: readonly number[], labels: readonly string[]): string {
+  const parts: string[] = [];
+  for (let i = 0; i < coeffs.length; i += 1) {
+    if (coeffs[i] !== 0 && labels[i] !== undefined) {
+      parts.push(`${carrierLetter(i)} = ${labels[i]}`);
+    }
+  }
+  return parts.join(' · ');
+}
+
+function HitRow({ hit, labels }: { hit: Hit; labels: readonly string[] }) {
   return (
     <li className="conflict">
       <div className="conflict__head">
@@ -16,6 +31,9 @@ function HitRow({ hit }: { hit: Hit }) {
       </div>
       <div className="conflict__detail">
         <code>{formatProduct(hit.product.coeffs)}</code>
+        <span className="hint conflict__key">
+          {contributors(hit.product.coeffs, labels)}
+        </span>
       </div>
     </li>
   );
@@ -28,6 +46,8 @@ export function ConflictList() {
   const [showSelf, setShowSelf] = useState(false);
 
   if (result === null) return null;
+
+  const labels = carriers.map((c) => c.label);
 
   return (
     <section className="panel">
@@ -66,7 +86,7 @@ export function ConflictList() {
                     .sort((a, b) => a.product.order - b.product.order)
                     .slice(0, 100)
                     .map((hit, i) => (
-                      <HitRow key={i} hit={hit} />
+                      <HitRow key={i} hit={hit} labels={labels} />
                     ))}
                 </ul>
               )}

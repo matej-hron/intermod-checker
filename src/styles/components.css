@@ -538,3 +538,8 @@
     max-width: 24rem;
   }
 }
+
+.conflict__key {
+  display: block;
+  margin-top: var(--space-1);
+}
