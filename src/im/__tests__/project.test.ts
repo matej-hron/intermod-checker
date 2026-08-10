@@ -162,3 +162,21 @@ describe('v2 migration', () => {
     expect(parsed.settings.exclusions).toEqual([]);
   });
 });
+
+describe('invalid version numbers', () => {
+  it('rejects a file with version 0', () => {
+    const parsed = parseProject(
+      JSON.stringify({ version: 0, name: 'x', carriers, settings: DEFAULT_SETTINGS }),
+    );
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) expect(parsed.error).toBe('The file is not a project.');
+  });
+
+  it('rejects a file with a negative version', () => {
+    const parsed = parseProject(
+      JSON.stringify({ version: -1, name: 'x', carriers, settings: DEFAULT_SETTINGS }),
+    );
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) expect(parsed.error).toBe('The file is not a project.');
+  });
+});

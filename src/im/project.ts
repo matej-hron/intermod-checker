@@ -63,7 +63,7 @@ const SETTINGS_NUMERIC_KEYS = [
 function sanitizeSettings(raw: unknown): Settings {
   if (typeof raw !== 'object' || raw === null) return { ...DEFAULT_SETTINGS };
   const s = raw as Record<string, unknown>;
-  const out: Settings = { ...DEFAULT_SETTINGS };
+  const out: Settings = { ...DEFAULT_SETTINGS, exclusions: [] };
   for (const key of SETTINGS_NUMERIC_KEYS) {
     const v = s[key];
     if (typeof v === 'number' && Number.isFinite(v)) out[key] = v;
@@ -101,6 +101,9 @@ export function parseProject(json: string): ProjectFile | { error: string } {
   const candidate = raw as Record<string, unknown>;
 
   if (typeof candidate.version !== 'number') {
+    return { error: 'The file is not a project.' };
+  }
+  if (candidate.version < 1) {
     return { error: 'The file is not a project.' };
   }
   if (candidate.version > PROJECT_VERSION) {
