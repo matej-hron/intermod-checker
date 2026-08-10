@@ -3,7 +3,7 @@ import { validate } from '../validate';
 import { DEFAULT_SETTINGS, type Carrier } from '../types';
 
 function carrier(id: string, mhz: number): Carrier {
-  return { id, label: id, freqKHz: Math.round(mhz * 1000) };
+  return { id, label: id, freqKHz: Math.round(mhz * 1000), locked: false };
 }
 
 const good = [carrier('a', 510), carrier('b', 530), carrier('c', 560)];
@@ -123,7 +123,7 @@ describe('validate', () => {
 
   it('rejects two carriers sharing an identifier', () => {
     const issues = validate(
-      [carrier('same', 510), { id: 'same', label: 'b', freqKHz: 530000 }],
+      [carrier('same', 510), { id: 'same', label: 'b', freqKHz: 530000, locked: false }],
       DEFAULT_SETTINGS,
     );
     expect(issues.some((i) => /identifier/i.test(i.message))).toBe(true);

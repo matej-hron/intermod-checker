@@ -3,8 +3,8 @@ import { serializeProject, parseProject, PROJECT_VERSION } from '../project';
 import { DEFAULT_SETTINGS, type Carrier } from '../types';
 
 const carriers: Carrier[] = [
-  { id: 'a', label: 'Lead vocal', freqKHz: 510000 },
-  { id: 'b', label: 'Guitar', freqKHz: 530000 },
+  { id: 'a', label: 'Lead vocal', freqKHz: 510000, locked: false },
+  { id: 'b', label: 'Guitar', freqKHz: 530000, locked: false },
 ];
 
 describe('project files', () => {
@@ -87,4 +87,78 @@ describe('project files', () => {
     expect(parsed.settings.oddOnly).toBe(DEFAULT_SETTINGS.oddOnly);
   });
 
+});
+
+describe('v2 migration', () => {
+  it('loads a version 1 file with locked false and no exclusions', () => {
+    const json = JSON.stringify({
+      version: 1,
+      name: 'Old',
+      carriers: [
+        { id: 'a', label: 'Mic 1', freqKHz: 510000 },
+        { id: 'b', label: 'Mic 2', freqKHz: 530000 },
+      ],
+      settings: { bandMinKHz: 500000, bandMaxKHz: 700000 },
+    });
+    const parsed = parseProject(json);
+    if ('error' in parsed) throw new Error(parsed.error);
+    expect(parsed.carriers.every((c) => c.locked === false)).toBe(true);
+    expect(parsed.settings.exclusions).toEqual([]);
+  });
+
+  it('round-trips a version 2 file', () => {
+    const carriers = [
+      { id: 'a', label: 'Mic 1', freqKHz: 510000, locked: true },
+      { id: 'b', label: 'Mic 2', freqKHz: 530000, locked: false },
+    ];
+    const settings = {
+      ...DEFAULT_SETTINGS,
+      exclusions: [
+        { id: 'x1', label: 'Local DTV', startKHz: 566000, endKHz: 574000 },
+      ],
+    };
+    const parsed = parseProject(serializeProject('P', carriers, settings));
+    if ('error' in parsed) throw new Error(parsed.error);
+    expect(parsed.version).toBe(2);
+    expect(parsed.carriers).toEqual(carriers);
+    expect(parsed.settings.exclusions).toEqual(settings.exclusions);
+  });
+
+  it('rejects a version 3 file', () => {
+    const parsed = parseProject(
+      JSON.stringify({ version: 3, name: 'Future', carriers: [], settings: {} }),
+    );
+    expect('error' in parsed).toBe(true);
+  });
+
+  it('normalizes a reversed exclusion range on load', () => {
+    const json = JSON.stringify({
+      version: 2,
+      name: 'P',
+      carriers: [{ id: 'a', label: 'Mic 1', freqKHz: 510000, locked: false }],
+      settings: {
+        exclusions: [{ id: 'x', label: 'Backwards', startKHz: 600000, endKHz: 560000 }],
+      },
+    });
+    const parsed = parseProject(json);
+    if ('error' in parsed) throw new Error(parsed.error);
+    expect(parsed.settings.exclusions[0]).toEqual({
+      id: 'x',
+      label: 'Backwards',
+      startKHz: 560000,
+      endKHz: 600000,
+    });
+  });
+
+  it('drops malformed exclusions rather than passing NaN to the engine', () => {
+    const json = JSON.stringify({
+      version: 2,
+      name: 'P',
+      carriers: [{ id: 'a', label: 'Mic 1', freqKHz: 510000, locked: false }],
+      settings: { exclusions: [{ id: 'x', label: 'Bad', startKHz: '560000', endKHz: 600000 }] },
+    });
+    const parsed = parseProject(json);
+    if ('error' in parsed) throw new Error(parsed.error);
+    expect(parsed.settings.exclusions).toEqual([]);
+  });
 });

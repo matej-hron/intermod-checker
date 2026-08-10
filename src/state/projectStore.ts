@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { useAnalysisStore } from './analysisStore';
 import {
   DEFAULT_SETTINGS,
+  PROJECT_VERSION,
   parseProject,
   type Carrier,
   type ProjectFile,
@@ -32,8 +33,8 @@ function newId(): string {
 
 function initialCarriers(): Carrier[] {
   return [
-    { id: newId(), label: 'Mic 1', freqKHz: 510000 },
-    { id: newId(), label: 'Mic 2', freqKHz: 530000 },
+    { id: newId(), label: 'Mic 1', freqKHz: 510000, locked: false },
+    { id: newId(), label: 'Mic 2', freqKHz: 530000, locked: false },
   ];
 }
 
@@ -63,7 +64,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ version: 1, name, carriers, settings }),
+        JSON.stringify({ version: PROJECT_VERSION, name, carriers, settings }),
       );
     } catch {
       // Storage is full or blocked; the in-memory project still works.
@@ -103,6 +104,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
             id: newId(),
             label: `Mic ${carriers.length + 1}`,
             freqKHz: get().settings.bandMinKHz,
+            locked: false,
           },
         ],
       });

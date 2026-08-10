@@ -4,7 +4,7 @@ import { analyze } from '../analyze';
 import { DEFAULT_SETTINGS, type Carrier, type Settings } from '../types';
 
 function carrier(id: string, mhz: number): Carrier {
-  return { id, label: id, freqKHz: Math.round(mhz * 1000) };
+  return { id, label: id, freqKHz: Math.round(mhz * 1000), locked: false };
 }
 
 const settings: Settings = { ...DEFAULT_SETTINGS, lowOrder: 3, highOrder: 3 };
