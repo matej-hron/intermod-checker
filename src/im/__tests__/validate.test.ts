@@ -171,9 +171,42 @@ describe('exclusions', () => {
       ...base,
       exclusions: [{ id: 'x', label: 'Everything', startKHz: 400000, endKHz: 800000 }],
     };
-    expect(
-      validate(carriers, settings).some((i) => i.message.includes('leaves no usable')),
-    ).toBe(true);
+    const issues = validate(carriers, settings);
+    expect(issues.some((i) => i.message.includes('leaves no usable'))).toBe(true);
+    // finding 1: no spurious per-carrier "inside the excluded range" issues for this exclusion
+    expect(issues.some((i) => i.message.includes('inside the excluded range') && i.message.includes('Everything'))).toBe(false);
+  });
+
+  it('flags an exclusion outside the band with no per-carrier issues (finding 1)', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Elsewhere', startKHz: 800000, endKHz: 810000 }],
+    };
+    const issues = validate(carriers, settings);
+    expect(issues.some((i) => i.message.includes('no effect'))).toBe(true);
+    // no per-carrier noise for an exclusion that already has its own issue
+    expect(issues.some((i) => i.message.includes('inside the excluded range') && i.message.includes('Elsewhere'))).toBe(false);
+  });
+
+  it('flags a reversed exclusion range (finding 2)', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Backwards', startKHz: 574000, endKHz: 566000 }],
+    };
+    const issues = validate(carriers, settings);
+    const issue = issues.find((i) => i.field === 'exclusions' && i.message.includes('Backwards'));
+    expect(issue).toBeDefined();
+    expect(issue?.message).toMatch(/reversed/i);
+  });
+
+  it('accepts a single-frequency exclusion (startKHz === endKHz)', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'SingleFreq', startKHz: 570000, endKHz: 570000 }],
+    };
+    const issues = validate(carriers, settings);
+    // should not produce a reversed-range issue
+    expect(issues.some((i) => i.message.toLowerCase().includes('reversed'))).toBe(false);
   });
 
   it('accepts a clean set with a harmless exclusion', () => {
