@@ -1,0 +1,37 @@
+.freq-input--invalid {
+  border-color: var(--exact);
+  box-shadow: 0 0 0 2px var(--exact-bg);
+}
+
+.spectrum {
+  position: relative;
+  height: 5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  overflow: hidden;
+}
+/* Markers are centred on their frequency, so the track is inset by half the
+   widest marker to keep one sitting exactly on a band edge fully visible. */
+.spectrum__track { position: absolute; inset: 0 2px; }
+.spectrum__product,
+.spectrum__carrier { transform: translateX(-50%); }
+.spectrum__product { position: absolute; bottom: 0; width: 1px; height: 35%; background: var(--border-strong); }
+.spectrum__product--high { background: var(--exact); height: 100%; width: 2px; }
+.spectrum__product--medium { background: var(--near); height: 65%; }
+.spectrum__product--low { background: var(--border-strong); height: 35%; }
+.spectrum__carrier { position: absolute; top: 0; width: 2px; height: 100%; background: var(--clear); }
+.spectrum__carrier--bad { background: var(--exact); width: 3px; }
+.spectrum__scale { display: flex; justify-content: space-between; font-size: var(--text-sm); color: var(--text-muted); }
+
+.dot {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  box-sizing: border-box;
+  flex: none;
+}
+.dot--clear { border: 1px solid var(--clear); background: transparent; }
+.dot--near { border: 3px solid var(--near); background: transparent; }
+.dot--exact { border: 1px solid var(--exact); background: var(--exact); }
