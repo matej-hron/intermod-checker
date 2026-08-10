@@ -141,5 +141,44 @@ export function validate(
     }
   }
 
+  for (const e of settings.exclusions) {
+    if (!Number.isInteger(e.startKHz) || !Number.isInteger(e.endKHz)) {
+      issues.push({
+        field: 'exclusions',
+        message: `Exclusion "${e.label}" must use whole kilohertz.`,
+        carrierIds: [],
+      });
+      continue;
+    }
+    if (e.endKHz < settings.bandMinKHz || e.startKHz > settings.bandMaxKHz) {
+      issues.push({
+        field: 'exclusions',
+        message: `Exclusion "${e.label}" is outside the band and has no effect.`,
+        carrierIds: [],
+      });
+      continue;
+    }
+    if (e.startKHz <= settings.bandMinKHz && e.endKHz >= settings.bandMaxKHz) {
+      issues.push({
+        field: 'exclusions',
+        message: `Exclusion "${e.label}" covers the whole band and leaves no usable frequency.`,
+        carrierIds: [],
+      });
+    }
+  }
+
+  for (const c of carriers) {
+    const blocking = settings.exclusions.find(
+      (e) => c.freqKHz >= e.startKHz && c.freqKHz <= e.endKHz,
+    );
+    if (blocking !== undefined) {
+      issues.push({
+        field: 'exclusions',
+        message: `${(c.freqKHz / 1000).toFixed(3)} MHz is inside the excluded range "${blocking.label}".`,
+        carrierIds: [c.id],
+      });
+    }
+  }
+
   return issues;
 }

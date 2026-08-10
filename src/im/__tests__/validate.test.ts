@@ -129,3 +129,58 @@ describe('validate', () => {
     expect(issues.some((i) => /identifier/i.test(i.message))).toBe(true);
   });
 });
+
+describe('exclusions', () => {
+  const base = { ...DEFAULT_SETTINGS };
+  const carriers: Carrier[] = [
+    { id: 'a', label: 'Mic 1', freqKHz: 510000, locked: false },
+    { id: 'b', label: 'Mic 2', freqKHz: 570000, locked: false },
+  ];
+
+  it('flags a carrier sitting inside an exclusion range', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Local DTV', startKHz: 566000, endKHz: 574000 }],
+    };
+    const issues = validate(carriers, settings);
+    const issue = issues.find((i) => i.carrierIds.includes('b'));
+    expect(issue).toBeDefined();
+    expect(issue?.field).toBe('exclusions');
+    expect(issue?.message).toContain('Local DTV');
+  });
+
+  it('treats the exclusion bounds as inclusive', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Edge', startKHz: 570000, endKHz: 580000 }],
+    };
+    expect(validate(carriers, settings).some((i) => i.carrierIds.includes('b'))).toBe(true);
+  });
+
+  it('flags an exclusion that lies entirely outside the band', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Elsewhere', startKHz: 800000, endKHz: 810000 }],
+    };
+    const issue = validate(carriers, settings).find((i) => i.message.includes('Elsewhere'));
+    expect(issue?.message).toContain('no effect');
+  });
+
+  it('flags an exclusion that covers the whole band', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'Everything', startKHz: 400000, endKHz: 800000 }],
+    };
+    expect(
+      validate(carriers, settings).some((i) => i.message.includes('leaves no usable')),
+    ).toBe(true);
+  });
+
+  it('accepts a clean set with a harmless exclusion', () => {
+    const settings = {
+      ...base,
+      exclusions: [{ id: 'x', label: 'IEM rack', startKHz: 600000, endKHz: 604000 }],
+    };
+    expect(validate(carriers, settings)).toEqual([]);
+  });
+});
