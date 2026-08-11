@@ -1,23 +1,23 @@
 export type Modulation = 'fm' | 'digital';
 
 export interface DeviceMode {
-  id: string;
-  label: string;
+  readonly id: string;
+  readonly label: string;
   /** Peak deviation: half the quoted modulation width. */
-  deviationHz: number;
+  readonly deviationHz: number;
   /** The width as the manufacturer quotes it. */
-  widthHz: number;
+  readonly widthHz: number;
 }
 
 export interface Device {
-  id: string;
-  brand: string;
-  model: string;
-  modulation: Modulation;
+  readonly id: string;
+  readonly brand: string;
+  readonly model: string;
+  readonly modulation: Modulation;
   /** Ascending. Recorded and displayed, never used in the calculation. */
-  powersMW: number[];
+  readonly powersMW: readonly number[];
   /** At least one. The first is the default when none is chosen. */
-  modes: DeviceMode[];
+  readonly modes: readonly DeviceMode[];
 }
 
 // Deviations are held in hertz because Wisycom's narrow band is ±17.5 kHz,

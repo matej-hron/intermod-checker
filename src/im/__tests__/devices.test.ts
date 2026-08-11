@@ -29,6 +29,26 @@ describe('the catalogue', () => {
     }
   });
 
+  it('contains exactly 9 devices', () => {
+    expect(DEVICES.length).toBe(9);
+  });
+
+  it('pins the deviation figure for every device not covered by an earlier spot-check', () => {
+    // Expected values taken from the task-1-brief table, not from the code.
+    const cases: [id: string, deviationHz: number][] = [
+      ['wisycom-mtp41',     28000],
+      ['wisycom-mtb40s',    28000],
+      ['sennheiser-5212',   28000],
+      ['sennheiser-evolution', 24000],
+      ['lectrosonics-us',   70000],
+    ];
+    for (const [id, expected] of cases) {
+      const device = findDevice(id);
+      expect(device, `device ${id} should exist`).not.toBeNull();
+      expect(device!.modes[0].deviationHz, `${id} deviationHz`).toBe(expected);
+    }
+  });
+
   it('carries the narrow Wisycom mode at a deviation kilohertz cannot express', () => {
     const mtp60 = findDevice('wisycom-mtp60');
     expect(mtp60).not.toBeNull();
