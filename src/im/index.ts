@@ -1,4 +1,5 @@
 export * from './types';
+export * from './devices';
 export * from './units';
 export * from './enumerate';
 export * from './products';
