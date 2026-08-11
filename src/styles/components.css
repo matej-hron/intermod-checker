@@ -543,3 +543,37 @@
   display: block;
   margin-top: var(--space-1);
 }
+
+.device {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--space-2);
+}
+.device__field {
+  display: grid;
+  gap: var(--space-1);
+}
+.device__label {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.device__width {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.device__note {
+  font-style: italic;
+}
+
+@media (min-width: 48rem) {
+  .device {
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: end;
+  }
+  .device__width {
+    grid-column: 1 / -1;
+  }
+}

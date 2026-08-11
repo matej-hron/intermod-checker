@@ -3,6 +3,7 @@ import { useProjectStore } from '../state/projectStore';
 import { useAnalysisStore } from '../state/analysisStore';
 import { useViewStore } from '../state/viewStore';
 import { MHzInput } from './MHzInput';
+import { DevicePicker } from './DevicePicker';
 
 export function CarrierList() {
   const carriers = useProjectStore((s) => s.carriers);
@@ -56,6 +57,8 @@ export function CarrierList() {
                 MHz
               </span>
             </div>
+
+            <DevicePicker carrier={carrier} />
 
             <label className="carrier__lock">
               <input
