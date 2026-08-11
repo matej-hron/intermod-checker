@@ -1,6 +1,6 @@
 # Device presets and per-carrier deviation — design
 
-**Status:** proposed
+**Status:** implemented
 **Date:** 2026-08-11
 **Supersedes:** the "future work" note in `2026-08-09-intermod-checker-design.md` §8
 

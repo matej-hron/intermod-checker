@@ -101,7 +101,7 @@ export function SettingsPanel() {
       </label>
 
       <label>
-        Peak deviation (kHz)
+        Peak deviation for carriers with no device (kHz)
         <input
           type="number"
           min={0}
@@ -109,6 +109,10 @@ export function SettingsPanel() {
           onChange={(e) => setSettings({ deviationKHz: Number(e.target.value) })}
         />
       </label>
+      <p className="hint">
+        Carriers that name a device take their deviation from it and ignore this
+        setting.
+      </p>
 
       <label>
         Minimum spacing (kHz)

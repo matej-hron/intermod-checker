@@ -1,5 +1,7 @@
+import { resolveScanDeviationsHz } from './devices';
 import { enumerateVectors } from './enumerate';
 import { scanProducts } from './products';
+import { windowHz } from './window';
 import type {
   AnalysisResult,
   Carrier,
@@ -28,6 +30,8 @@ export function analyze(
 ): AnalysisResult {
   const n = carriers.length;
   const freqs = carriers.map((c) => c.freqKHz);
+  const devHz = resolveScanDeviationsHz(carriers, settings);
+  const uniformDevHz = settings.deviationKHz * 1000;
   const hits: Hit[] = [];
   const hitsByCarrierId: Record<string, Hit[]> = {};
   for (const c of carriers) hitsByCarrierId[c.id] = [];
@@ -48,13 +52,14 @@ export function analyze(
   const vectorsExamined = scanProducts(
     freqs,
     settings,
-    (freqKHz, coeffs, order) => {
-      const window = effectiveWindowKHz(order, settings);
+    (freqKHz, coeffs, order, spreadHz) => {
       let product: Product | null = null;
 
       for (let v = 0; v < n; v += 1) {
         const offset = Math.abs(freqs[v] - freqKHz);
-        if (offset > window) continue;
+        const victimDevHz = devHz === null ? uniformDevHz : devHz[v];
+        if (offset * 1000 > windowHz(spreadHz, victimDevHz, settings.nearHitWindowKHz))
+          continue;
 
         if (product === null) {
           // Normalise so the stored coefficients produce the positive frequency.
@@ -81,6 +86,7 @@ export function analyze(
         onProgress(enumerated / total);
       }
     },
+    devHz,
   );
 
   const conflictedIds = carriers

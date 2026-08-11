@@ -179,3 +179,43 @@ describe('explanationText', () => {
     expect(explanationText(null)).toBe('Clear');
   });
 });
+
+describe('per-carrier deviation in evaluateCandidate', () => {
+  const settings = {
+    ...DEFAULT_SETTINGS,
+    bandMinKHz: 400000,
+    bandMaxKHz: 700000,
+    lowOrder: 3,
+    highOrder: 3,
+    nearHitWindowKHz: 25,
+    minSpacingKHz: 0,
+  };
+
+  const carriers = [
+    { id: 'a', label: 'A', freqKHz: 500000, locked: false },
+    { id: 'b', label: 'B', freqKHz: 500150, locked: false },
+    { id: 'c', label: 'C', freqKHz: 499750, locked: false },
+  ];
+
+  it('calls the candidate clear when no carrier has a width', () => {
+    const freqs = carriers.map((c) => c.freqKHz);
+    const evaluation = evaluateCandidate(freqs, 2, 499750, settings, carriers);
+    expect(evaluation.worst).toBe('clear');
+  });
+
+  it('sees the same conflict the analysis sees once devices are chosen', () => {
+    const withDevices = carriers.map((c) => ({
+      ...c,
+      deviceId: 'wisycom-mtp40',
+    }));
+    const freqs = withDevices.map((c) => c.freqKHz);
+    const evaluation = evaluateCandidate(
+      freqs,
+      2,
+      499750,
+      settings,
+      withDevices,
+    );
+    expect(evaluation.worst).not.toBe('clear');
+  });
+});

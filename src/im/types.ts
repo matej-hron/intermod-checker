@@ -4,6 +4,12 @@ export interface Carrier {
   freqKHz: number;
   /** A locked carrier is never retuned by any automated process. */
   locked: boolean;
+  /** Catalogue id. Absent means the global deviation setting applies. */
+  deviceId?: string;
+  /** Which of the device's modes. Absent means its first. */
+  modeId?: string;
+  /** Recorded and displayed only; never used in the calculation. */
+  powerMW?: number;
 }
 
 /** A span of the band that a carrier may not occupy. Both bounds inclusive. */
