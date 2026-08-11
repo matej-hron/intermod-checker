@@ -11,6 +11,7 @@ import {
   type CriterionKey,
   type Verdict,
 } from './criteria';
+import { resolveScanDeviationsHz } from './devices';
 import { isExcluded, type Carrier, type Settings } from './types';
 
 export interface CandidateExplanation {
@@ -104,10 +105,11 @@ export function evaluateCandidate(
   freqs[index] = candidateKHz;
 
   const full = mode === 'full';
-  const nearWindow = settings.nearHitWindowKHz;
-  const deviation = settings.deviationKHz;
+  const nearWindowHz = settings.nearHitWindowKHz * 1000;
+  const devHz = resolveScanDeviationsHz(carriers, settings);
+  const uniformDevHz = settings.deviationKHz * 1000;
 
-  scanProducts(freqs, settings, (productKHz, coeffs, order) => {
+  scanProducts(freqs, settings, (productKHz, coeffs, order, spreadHz) => {
     // The criterion key is a per-product string (`criterionKey` templates one),
     // so building it on every product visit allocates in the scan's hottest
     // loop. `full` mode needs it up front for the early skip below; `first-hit`
@@ -119,9 +121,9 @@ export function evaluateCandidate(
     // fixed within a criterion and the offset is already zero.
     if (full && verdicts[key] === 'exact') return;
 
-    // Inlined `effectiveWindowKHz` — a function call in the scan's hottest loop.
-    const scaled = order * deviation;
-    const window = scaled > nearWindow ? scaled : nearWindow;
+    // `windowHz` inlined — a function call in the scan's hottest loop. The
+    // victim term is added per victim below, so this is only the floor check
+    // the spread can already clear on its own.
     const moverContributes = coeffs[index] !== 0;
 
     // Only products the mover is party to can touch a carrier other than the
@@ -134,7 +136,10 @@ export function evaluateCandidate(
       if (v !== index && !moverContributes) continue;
 
       const offset = Math.abs(freqs[v] - productKHz);
-      if (offset > window) continue;
+      const victimDevHz = devHz === null ? uniformDevHz : devHz[v];
+      const combined = spreadHz + victimDevHz;
+      const window = combined > nearWindowHz ? combined : nearWindowHz;
+      if (offset * 1000 > window) continue;
 
       if (!full) key = criterionKey(txBucket(coeffs), order);
 
@@ -166,7 +171,7 @@ export function evaluateCandidate(
     }
 
     if (interference !== null && exactCount >= interference.length) return false;
-  });
+  }, undefined, devHz);
 
   freqs[index] = original;
   return settle(best);
