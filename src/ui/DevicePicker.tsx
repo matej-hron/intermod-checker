@@ -15,6 +15,7 @@ export function DevicePicker({ carrier }: { carrier: Carrier }) {
       <label className="device__field">
         <span className="device__label">Device</span>
         <select
+          aria-label={`Device for ${carrier.label}`}
           value={carrier.deviceId ?? NO_DEVICE}
           onChange={(e) => {
             const next = findDevice(e.target.value || undefined);
@@ -44,6 +45,7 @@ export function DevicePicker({ carrier }: { carrier: Carrier }) {
         <label className="device__field">
           <span className="device__label">Power</span>
           <select
+            aria-label={`Power for ${carrier.label}`}
             value={carrier.powerMW ?? NO_DEVICE}
             onChange={(e) =>
               updateCarrier(carrier.id, {
@@ -65,6 +67,7 @@ export function DevicePicker({ carrier }: { carrier: Carrier }) {
         <label className="device__field">
           <span className="device__label">Mode</span>
           <select
+            aria-label={`Mode for ${carrier.label}`}
             value={mode!.id}
             onChange={(e) => updateCarrier(carrier.id, { modeId: e.target.value })}
           >
