@@ -1,6 +1,7 @@
 import { DEFAULT_SETTINGS, normalizeExclusion, type Carrier, type Exclusion, type Settings } from './types';
+import { findDevice } from './devices';
 
-export const PROJECT_VERSION = 2;
+export const PROJECT_VERSION = 3;
 
 export interface ProjectFile {
   version: number;
@@ -9,18 +10,38 @@ export interface ProjectFile {
   settings: Settings;
 }
 
+// A device the catalogue does not know cannot yield a deviation, so it is
+// dropped rather than kept: the carrier then shows "No device" in Setup, which
+// makes the loss visible instead of silently mis-modelling the transmitter.
 function toCarrier(value: unknown): Carrier | null {
   if (typeof value !== 'object' || value === null) return null;
   const c = value as Record<string, unknown>;
   if (typeof c.id !== 'string') return null;
   if (typeof c.label !== 'string') return null;
   if (typeof c.freqKHz !== 'number' || !Number.isFinite(c.freqKHz)) return null;
-  return {
+
+  const carrier: Carrier = {
     id: c.id,
     label: c.label,
     freqKHz: c.freqKHz,
     locked: c.locked === true,
   };
+
+  const device = typeof c.deviceId === 'string' ? findDevice(c.deviceId) : null;
+  if (device !== null) {
+    carrier.deviceId = device.id;
+    if (
+      typeof c.modeId === 'string' &&
+      device.modes.some((m) => m.id === c.modeId)
+    ) {
+      carrier.modeId = c.modeId;
+    }
+    if (typeof c.powerMW === 'number' && device.powersMW.includes(c.powerMW)) {
+      carrier.powerMW = c.powerMW;
+    }
+  }
+
+  return carrier;
 }
 
 function sanitizeExclusions(raw: unknown): Exclusion[] {

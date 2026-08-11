@@ -106,7 +106,7 @@ describe('v2 migration', () => {
     expect(parsed.settings.exclusions).toEqual([]);
   });
 
-  it('round-trips a version 2 file', () => {
+  it('round-trips a file at the current version', () => {
     const carriers = [
       { id: 'a', label: 'Mic 1', freqKHz: 510000, locked: true },
       { id: 'b', label: 'Mic 2', freqKHz: 530000, locked: false },
@@ -119,14 +119,14 @@ describe('v2 migration', () => {
     };
     const parsed = parseProject(serializeProject('P', carriers, settings));
     if ('error' in parsed) throw new Error(parsed.error);
-    expect(parsed.version).toBe(2);
+    expect(parsed.version).toBe(PROJECT_VERSION);
     expect(parsed.carriers).toEqual(carriers);
     expect(parsed.settings.exclusions).toEqual(settings.exclusions);
   });
 
-  it('rejects a version 3 file', () => {
+  it('rejects a version 4 file', () => {
     const parsed = parseProject(
-      JSON.stringify({ version: 3, name: 'Future', carriers: [], settings: {} }),
+      JSON.stringify({ version: 4, name: 'Future', carriers: [], settings: {} }),
     );
     expect('error' in parsed).toBe(true);
   });
@@ -178,5 +178,77 @@ describe('invalid version numbers', () => {
     );
     expect('error' in parsed).toBe(true);
     if ('error' in parsed) expect(parsed.error).toBe('The file is not a project.');
+  });
+});
+
+describe('device fields', () => {
+  const carrier = {
+    id: 'a',
+    label: 'A',
+    freqKHz: 500000,
+    locked: false,
+    deviceId: 'wisycom-mtp60',
+    modeId: 'narrow',
+    powerMW: 50,
+  };
+
+  it('survives a round trip', () => {
+    const json = serializeProject('P', [carrier], DEFAULT_SETTINGS);
+    const parsed = parseProject(json);
+    expect('error' in parsed).toBe(false);
+    if ('error' in parsed) return;
+    expect(parsed.carriers[0].deviceId).toBe('wisycom-mtp60');
+    expect(parsed.carriers[0].modeId).toBe('narrow');
+    expect(parsed.carriers[0].powerMW).toBe(50);
+  });
+
+  it('drops a device that is not in the catalogue', () => {
+    const json = JSON.stringify({
+      version: 3,
+      name: 'P',
+      carriers: [{ ...carrier, deviceId: 'ghost' }],
+      settings: DEFAULT_SETTINGS,
+    });
+    const parsed = parseProject(json);
+    if ('error' in parsed) throw new Error(parsed.error);
+    expect(parsed.carriers[0].deviceId).toBeUndefined();
+    expect(parsed.carriers[0].modeId).toBeUndefined();
+  });
+
+  it('drops a mode the device does not have', () => {
+    const json = JSON.stringify({
+      version: 3,
+      name: 'P',
+      carriers: [{ ...carrier, deviceId: 'wisycom-mtp40', modeId: 'narrow' }],
+      settings: DEFAULT_SETTINGS,
+    });
+    const parsed = parseProject(json);
+    if ('error' in parsed) throw new Error(parsed.error);
+    expect(parsed.carriers[0].deviceId).toBe('wisycom-mtp40');
+    expect(parsed.carriers[0].modeId).toBeUndefined();
+  });
+
+  it('drops a power the device does not offer', () => {
+    const json = JSON.stringify({
+      version: 3,
+      name: 'P',
+      carriers: [{ ...carrier, deviceId: 'wisycom-mtp40', powerMW: 999 }],
+      settings: DEFAULT_SETTINGS,
+    });
+    const parsed = parseProject(json);
+    if ('error' in parsed) throw new Error(parsed.error);
+    expect(parsed.carriers[0].powerMW).toBeUndefined();
+  });
+
+  it('still loads a project saved before devices existed', () => {
+    const json = JSON.stringify({
+      version: 2,
+      name: 'P',
+      carriers: [{ id: 'a', label: 'A', freqKHz: 500000, locked: false }],
+      settings: DEFAULT_SETTINGS,
+    });
+    const parsed = parseProject(json);
+    if ('error' in parsed) throw new Error(parsed.error);
+    expect(parsed.carriers[0].deviceId).toBeUndefined();
   });
 });
