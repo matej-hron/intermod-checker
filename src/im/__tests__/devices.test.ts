@@ -94,3 +94,74 @@ describe('formatModeWidth', () => {
     );
   });
 });
+
+import { carrierDeviationsHz, resolveDeviationHz } from '../devices';
+import { DEFAULT_SETTINGS, type Carrier } from '../types';
+
+function carrier(id: string, extra: Partial<Carrier> = {}): Carrier {
+  return { id, label: id, freqKHz: 500000, locked: false, ...extra };
+}
+
+describe('resolveDeviationHz', () => {
+  it('falls back to the global setting when there is no device', () => {
+    const settings = { ...DEFAULT_SETTINGS, deviationKHz: 12 };
+    expect(resolveDeviationHz(carrier('a'), settings)).toBe(12000);
+  });
+
+  it('is zero by default, which is what keeps existing projects unchanged', () => {
+    expect(resolveDeviationHz(carrier('a'), DEFAULT_SETTINGS)).toBe(0);
+  });
+
+  it('takes the deviation from the device and mode', () => {
+    const c = carrier('a', { deviceId: 'wisycom-mtp60', modeId: 'narrow' });
+    expect(resolveDeviationHz(c, DEFAULT_SETTINGS)).toBe(17500);
+  });
+
+  it('uses the first mode when none is named', () => {
+    const c = carrier('a', { deviceId: 'wisycom-mtp60' });
+    expect(resolveDeviationHz(c, DEFAULT_SETTINGS)).toBe(28000);
+  });
+
+  it('falls back to the global setting for an unknown device', () => {
+    const settings = { ...DEFAULT_SETTINGS, deviationKHz: 9 };
+    const c = carrier('a', { deviceId: 'not-a-device' });
+    expect(resolveDeviationHz(c, settings)).toBe(9000);
+  });
+
+  it('ignores the power option entirely', () => {
+    const a = carrier('a', { deviceId: 'wisycom-mtp41', powerMW: 10 });
+    const b = carrier('b', { deviceId: 'wisycom-mtp41', powerMW: 100 });
+    expect(resolveDeviationHz(a, DEFAULT_SETTINGS)).toBe(
+      resolveDeviationHz(b, DEFAULT_SETTINGS),
+    );
+  });
+});
+
+describe('carrierDeviationsHz', () => {
+  it('returns null when every carrier shares one deviation', () => {
+    const carriers = [carrier('a'), carrier('b')];
+    expect(carrierDeviationsHz(carriers, DEFAULT_SETTINGS)).toBeNull();
+  });
+
+  it('returns null when every carrier names the same device and mode', () => {
+    const carriers = [
+      carrier('a', { deviceId: 'wisycom-mtp40' }),
+      carrier('b', { deviceId: 'wisycom-mtp40', modeId: 'wide' }),
+    ];
+    expect(carrierDeviationsHz(carriers, DEFAULT_SETTINGS)).toBeNull();
+  });
+
+  it('returns one entry per carrier when the fleet is mixed', () => {
+    const carriers = [
+      carrier('a', { deviceId: 'wisycom-mtp40' }),
+      carrier('b', { deviceId: 'sound-devices-a10' }),
+    ];
+    expect(carrierDeviationsHz(carriers, DEFAULT_SETTINGS)).toEqual([
+      28000, 100000,
+    ]);
+  });
+
+  it('returns null for an empty fleet', () => {
+    expect(carrierDeviationsHz([], DEFAULT_SETTINGS)).toBeNull();
+  });
+});

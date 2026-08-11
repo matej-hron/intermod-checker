@@ -1,3 +1,5 @@
+import type { Carrier, Settings } from './types';
+
 export type Modulation = 'fm' | 'digital';
 
 export interface DeviceMode {
@@ -143,4 +145,30 @@ function kHzText(hz: number): string {
 
 export function formatModeWidth(mode: DeviceMode): string {
   return `±${kHzText(mode.deviationHz)} kHz · ${kHzText(mode.widthHz)} kHz wide`;
+}
+
+/**
+ * The single place the precedence lives: a carrier's device wins, and the
+ * global setting is only a fallback for carriers that name no device.
+ */
+export function resolveDeviationHz(carrier: Carrier, settings: Settings): number {
+  const device = findDevice(carrier.deviceId);
+  if (device === null) return settings.deviationKHz * 1000;
+  return findMode(device, carrier.modeId).deviationHz;
+}
+
+/**
+ * Returns null when every carrier resolves to the same deviation. The engine's
+ * hot loop reads that as permission to use the cheap `order × deviation`
+ * arithmetic, so a fleet of identical devices — and every project saved before
+ * this feature existed — costs exactly what it did before.
+ */
+export function carrierDeviationsHz(
+  carriers: readonly Carrier[],
+  settings: Settings,
+): number[] | null {
+  if (carriers.length === 0) return null;
+  const out = carriers.map((c) => resolveDeviationHz(c, settings));
+  const first = out[0];
+  return out.every((hz) => hz === first) ? null : out;
 }
