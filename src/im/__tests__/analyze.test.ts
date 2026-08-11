@@ -266,3 +266,72 @@ describe('analyze', () => {
     }
   });
 });
+
+import { carrierDeviationsHz } from '../devices';
+
+describe('per-carrier deviation in analyze', () => {
+  // 2A − B lands on 499850, which is 100 kHz from C. C contributes nothing to
+  // that product, so it is a genuine conflict rather than self-mixing.
+  const settings = {
+    ...DEFAULT_SETTINGS,
+    bandMinKHz: 400000,
+    bandMaxKHz: 700000,
+    lowOrder: 3,
+    highOrder: 3,
+    nearHitWindowKHz: 25,
+  };
+
+  const base = [
+    { id: 'a', label: 'A', freqKHz: 500000, locked: false },
+    { id: 'b', label: 'B', freqKHz: 500150, locked: false },
+    { id: 'c', label: 'C', freqKHz: 499750, locked: false },
+  ];
+
+  it('leaves the victim clear when no carrier has a width', () => {
+    const result = analyze(base, settings);
+    expect(result.conflictedIds).not.toContain('c');
+  });
+
+  it('finds the conflict once every carrier is a real transmitter', () => {
+    const carriers = base.map((c) => ({ ...c, deviceId: 'wisycom-mtp40' }));
+    const result = analyze(carriers, settings);
+    // Spread 3 × 28 kHz = 84 kHz, plus the victim's own 28 kHz, is 112 kHz —
+    // wide enough to reach 100 kHz away. Without the victim term it would not.
+    expect(result.conflictedIds).toContain('c');
+  });
+
+  it('is unaffected by the power option', () => {
+    const carriers = base.map((c) => ({
+      ...c,
+      deviceId: 'wisycom-mtp40',
+      powerMW: 50,
+    }));
+    expect(analyze(carriers, settings).conflictedIds).toContain('c');
+  });
+
+  it('treats a uniform fleet as uniform', () => {
+    const carriers = base.map((c) => ({ ...c, deviceId: 'wisycom-mtp40' }));
+    expect(carrierDeviationsHz(carriers, settings)).toBeNull();
+  });
+
+  // This is the case the whole feature exists for, and it is the only test
+  // that drives the mixed per-carrier branch of scanProducts end to end.
+  // A narrow-band MTP60 is ±17.5 kHz, so three of them spread 2A − B by only
+  // 52.5 kHz and the product stays clear of C, 100 kHz away. Swap C alone for
+  // an A10 and nothing about the product changes — but the victim is now
+  // 100 kHz wide, so the same product lands inside it.
+  it('reports a conflict a uniform narrow-band fleet would miss', () => {
+    const narrow = base.map((c) => ({
+      ...c,
+      deviceId: 'wisycom-mtp60',
+      modeId: 'narrow',
+    }));
+    expect(analyze(narrow, settings).conflictedIds).not.toContain('c');
+
+    const mixed = narrow.map((c) =>
+      c.id === 'c' ? { ...c, deviceId: 'sound-devices-a10', modeId: undefined } : c,
+    );
+    expect(carrierDeviationsHz(mixed, settings)).toEqual([17500, 17500, 100000]);
+    expect(analyze(mixed, settings).conflictedIds).toContain('c');
+  });
+});

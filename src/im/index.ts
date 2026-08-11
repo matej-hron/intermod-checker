@@ -3,6 +3,7 @@ export * from './devices';
 export * from './units';
 export * from './enumerate';
 export * from './products';
+export * from './window';
 export * from './criteria';
 export * from './evaluate';
 export * from './candidates';

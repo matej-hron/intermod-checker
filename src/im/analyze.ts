@@ -1,5 +1,7 @@
+import { carrierDeviationsHz, resolveDeviationHz } from './devices';
 import { enumerateVectors } from './enumerate';
 import { scanProducts } from './products';
+import { windowHz } from './window';
 import type {
   AnalysisResult,
   Carrier,
@@ -28,6 +30,20 @@ export function analyze(
 ): AnalysisResult {
   const n = carriers.length;
   const freqs = carriers.map((c) => c.freqKHz);
+  const devHz = ((): readonly number[] | null => {
+    const uniform = carrierDeviationsHz(carriers, settings);
+    // carrierDeviationsHz returns null for a *uniform* fleet, which the scan
+    // reads as "use the global deviation". A fleet of identical devices is
+    // uniform too, but at a deviation that differs from the global setting, so
+    // make that shared deviation explicit; legacy projects (no device) resolve
+    // back to the global setting and keep the allocation-free fast path.
+    if (uniform !== null || n === 0) return uniform;
+    const sharedHz = resolveDeviationHz(carriers[0], settings);
+    return sharedHz === settings.deviationKHz * 1000
+      ? null
+      : carriers.map(() => sharedHz);
+  })();
+  const uniformDevHz = settings.deviationKHz * 1000;
   const hits: Hit[] = [];
   const hitsByCarrierId: Record<string, Hit[]> = {};
   for (const c of carriers) hitsByCarrierId[c.id] = [];
@@ -48,13 +64,14 @@ export function analyze(
   const vectorsExamined = scanProducts(
     freqs,
     settings,
-    (freqKHz, coeffs, order) => {
-      const window = effectiveWindowKHz(order, settings);
+    (freqKHz, coeffs, order, spreadHz) => {
       let product: Product | null = null;
 
       for (let v = 0; v < n; v += 1) {
         const offset = Math.abs(freqs[v] - freqKHz);
-        if (offset > window) continue;
+        const victimDevHz = devHz === null ? uniformDevHz : devHz[v];
+        if (offset * 1000 > windowHz(spreadHz, victimDevHz, settings.nearHitWindowKHz))
+          continue;
 
         if (product === null) {
           // Normalise so the stored coefficients produce the positive frequency.
@@ -81,6 +98,7 @@ export function analyze(
         onProgress(enumerated / total);
       }
     },
+    devHz,
   );
 
   const conflictedIds = carriers
