@@ -103,12 +103,16 @@ function carrier(id: string, extra: Partial<Carrier> = {}): Carrier {
 }
 
 describe('resolveDeviationHz', () => {
-  it('falls back to the global setting when there is no device', () => {
+  // This is the definitive kHz→Hz conversion proof: 12 kHz must become 12 000 Hz.
+  it('converts the global deviationKHz setting to Hz when falling back', () => {
     const settings = { ...DEFAULT_SETTINGS, deviationKHz: 12 };
     expect(resolveDeviationHz(carrier('a'), settings)).toBe(12000);
   });
 
-  it('is zero by default, which is what keeps existing projects unchanged', () => {
+  // Backward-compatibility guarantee: DEFAULT_SETTINGS.deviationKHz is 0, so
+  // every project saved before this feature existed still produces 0 Hz here.
+  // (Unit-conversion correctness is covered by the non-zero case above.)
+  it('resolves to zero with default settings, preserving pre-existing project results', () => {
     expect(resolveDeviationHz(carrier('a'), DEFAULT_SETTINGS)).toBe(0);
   });
 
