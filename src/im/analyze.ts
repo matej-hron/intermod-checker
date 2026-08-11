@@ -1,4 +1,4 @@
-import { carrierDeviationsHz, resolveDeviationHz } from './devices';
+import { resolveScanDeviationsHz } from './devices';
 import { enumerateVectors } from './enumerate';
 import { scanProducts } from './products';
 import { windowHz } from './window';
@@ -30,19 +30,7 @@ export function analyze(
 ): AnalysisResult {
   const n = carriers.length;
   const freqs = carriers.map((c) => c.freqKHz);
-  const devHz = ((): readonly number[] | null => {
-    const uniform = carrierDeviationsHz(carriers, settings);
-    // carrierDeviationsHz returns null for a *uniform* fleet, which the scan
-    // reads as "use the global deviation". A fleet of identical devices is
-    // uniform too, but at a deviation that differs from the global setting, so
-    // make that shared deviation explicit; legacy projects (no device) resolve
-    // back to the global setting and keep the allocation-free fast path.
-    if (uniform !== null || n === 0) return uniform;
-    const sharedHz = resolveDeviationHz(carriers[0], settings);
-    return sharedHz === settings.deviationKHz * 1000
-      ? null
-      : carriers.map(() => sharedHz);
-  })();
+  const devHz = resolveScanDeviationsHz(carriers, settings);
   const uniformDevHz = settings.deviationKHz * 1000;
   const hits: Hit[] = [];
   const hitsByCarrierId: Record<string, Hit[]> = {};

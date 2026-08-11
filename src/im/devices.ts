@@ -172,3 +172,31 @@ export function carrierDeviationsHz(
   const first = out[0];
   return out.every((hz) => hz === first) ? null : out;
 }
+
+/**
+ * The deviations a product scan should use, in hertz.
+ *
+ * `null` is the fast-path signal: every carrier shares the global deviation, so
+ * the caller may use the allocation-free `order × deviation` arithmetic and read
+ * each victim's width straight from `settings.deviationKHz`. A non-null array
+ * means the caller MUST take the per-carrier path — the widths genuinely differ,
+ * or the fleet is uniform at a device deviation that is not the global setting.
+ *
+ * The distinction matters because `carrierDeviationsHz` collapses a uniform
+ * fleet to `null` regardless of what that shared deviation is; here a uniform
+ * fleet of real devices stays non-null so the scan widens its window by the
+ * device deviation rather than the (often zero) global one, while a device-less
+ * project resolves back to the global setting and keeps the fast path exactly as
+ * it was before device presets existed.
+ */
+export function resolveScanDeviationsHz(
+  carriers: readonly Carrier[],
+  settings: Settings,
+): readonly number[] | null {
+  const perCarrier = carrierDeviationsHz(carriers, settings);
+  if (perCarrier !== null || carriers.length === 0) return perCarrier;
+  const sharedHz = resolveDeviationHz(carriers[0], settings);
+  return sharedHz === settings.deviationKHz * 1000
+    ? null
+    : carriers.map(() => sharedHz);
+}

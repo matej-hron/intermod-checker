@@ -95,7 +95,7 @@ describe('formatModeWidth', () => {
   });
 });
 
-import { carrierDeviationsHz, resolveDeviationHz } from '../devices';
+import { carrierDeviationsHz, resolveDeviationHz, resolveScanDeviationsHz } from '../devices';
 import { DEFAULT_SETTINGS, type Carrier } from '../types';
 
 function carrier(id: string, extra: Partial<Carrier> = {}): Carrier {
@@ -167,5 +167,51 @@ describe('carrierDeviationsHz', () => {
 
   it('returns null for an empty fleet', () => {
     expect(carrierDeviationsHz([], DEFAULT_SETTINGS)).toBeNull();
+  });
+});
+
+describe('resolveScanDeviationsHz', () => {
+  it('returns null for an empty fleet', () => {
+    expect(resolveScanDeviationsHz([], DEFAULT_SETTINGS)).toBeNull();
+  });
+
+  it('returns null for a single device-less carrier (legacy fast path)', () => {
+    expect(resolveScanDeviationsHz([carrier('a')], DEFAULT_SETTINGS)).toBeNull();
+  });
+
+  it('returns the device deviation for a single carrier with a device', () => {
+    const c = carrier('a', { deviceId: 'sound-devices-a10' });
+    expect(resolveScanDeviationsHz([c], DEFAULT_SETTINGS)).toEqual([100000]);
+  });
+
+  it('does NOT return null for a uniform fleet of real devices', () => {
+    // carrierDeviationsHz collapses this to null, but the shared 28 kHz device
+    // deviation differs from the 0 Hz global setting, so the scan must widen its
+    // window by 28 kHz rather than fall back to the floor.
+    const carriers = [
+      carrier('a', { deviceId: 'wisycom-mtp40' }),
+      carrier('b', { deviceId: 'wisycom-mtp40' }),
+    ];
+    expect(resolveScanDeviationsHz(carriers, DEFAULT_SETTINGS)).toEqual([
+      28000, 28000,
+    ]);
+  });
+
+  it('returns null for a legacy fleet with a non-zero global deviation', () => {
+    // No devices: the shared deviation IS the global setting, so the fast path
+    // survives and every product uses order × deviation.
+    const settings = { ...DEFAULT_SETTINGS, deviationKHz: 12 };
+    const carriers = [carrier('a'), carrier('b'), carrier('c')];
+    expect(resolveScanDeviationsHz(carriers, settings)).toBeNull();
+  });
+
+  it('returns one entry per carrier when the fleet is mixed', () => {
+    const carriers = [
+      carrier('a', { deviceId: 'wisycom-mtp40' }),
+      carrier('b', { deviceId: 'sound-devices-a10' }),
+    ];
+    expect(resolveScanDeviationsHz(carriers, DEFAULT_SETTINGS)).toEqual([
+      28000, 100000,
+    ]);
   });
 });
