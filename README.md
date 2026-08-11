@@ -70,7 +70,7 @@ Each frequency can name the transmitter that will use it. The device decides how
 much spectrum that transmitter occupies, which is what the interference
 calculation actually needs.
 
-| Brand | Model | Power | Width |
+| Brand | Model | Power | Peak deviation |
 | --- | --- | --- | --- |
 | Wisycom | MTP40 | 10, 50 mW | ±28 kHz |
 | Wisycom | MTP41 | 10, 50, 100 mW | ±28 kHz |
@@ -79,7 +79,7 @@ calculation actually needs.
 | Wisycom | MTB40s | 10, 50, 100 mW | ±28 kHz |
 | Sennheiser | 5212 | 10, 50 mW | ±28 kHz |
 | Sennheiser | Evolution G2/G3/G4/2000 | 10, 50 mW | ±24 kHz |
-| Sound Devices | A10 | 10, 20, 50 mW | ±100 kHz (digital) |
+| Sound Devices | A10 | 10, 20, 50 mW | ±100 kHz (digital, 200 kHz wide) |
 | Lectrosonics | US models | 50 mW | ±70 kHz |
 
 Power is recorded for your own reference. It does not affect the calculation —
