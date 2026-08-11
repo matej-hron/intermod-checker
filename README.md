@@ -64,6 +64,37 @@ Two things worth knowing:
 - When a new version is available the app shows a *Reload* bar rather than
   updating itself. It will never reload underneath you mid-show.
 
+## Devices
+
+Each frequency can name the transmitter that will use it. The device decides how
+much spectrum that transmitter occupies, which is what the interference
+calculation actually needs.
+
+| Brand | Model | Power | Width |
+| --- | --- | --- | --- |
+| Wisycom | MTP40 | 10, 50 mW | ±28 kHz |
+| Wisycom | MTP41 | 10, 50, 100 mW | ±28 kHz |
+| Wisycom | MTP60 | 10, 50, 100 mW | ±28 kHz wide, ±17.5 kHz narrow |
+| Wisycom | MTP61 | 10, 50, 100 mW | ±28 kHz wide, ±17.5 kHz narrow |
+| Wisycom | MTB40s | 10, 50, 100 mW | ±28 kHz |
+| Sennheiser | 5212 | 10, 50 mW | ±28 kHz |
+| Sennheiser | Evolution G2/G3/G4/2000 | 10, 50 mW | ±24 kHz |
+| Sound Devices | A10 | 10, 20, 50 mW | ±100 kHz (digital) |
+| Lectrosonics | US models | 50 mW | ±70 kHz |
+
+Power is recorded for your own reference. It does not affect the calculation —
+modelling it properly needs transmitter placement and receiver sensitivity,
+which this tool does not know.
+
+For gear that is not listed, leave the device unset and use the **peak deviation
+for carriers with no device** setting instead.
+
+Two honest limits. The A10's 200 kHz is digital channel bandwidth rather than FM
+deviation; the arithmetic treats the two alike. And the quoted deviation
+understates true occupied bandwidth for every FM device, because Carson's rule
+adds the audio bandwidth on top — so results are optimistic by roughly the same
+margin for all of them.
+
 ## The theory, briefly
 
 An intermodulation (IM) product of carriers `A`, `B`, `C`… is any frequency of
