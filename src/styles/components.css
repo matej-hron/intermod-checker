@@ -244,6 +244,49 @@
 }
 .carrier-list__add { width: 100%; margin-top: var(--space-3); }
 .sheet--tall .sheet__body { max-height: 85vh; overflow-y: auto; }
+.sheet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sheet__header h2 { margin: 0; }
+
+.projects { display: grid; gap: var(--space-2); padding: 0; list-style: none; }
+.project {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--tap);
+  gap: var(--space-2);
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+.project--active { border-color: var(--accent); }
+.project__open {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  text-align: left;
+  background: none;
+  border: 0;
+  min-width: 0;
+}
+.project__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project__meta { font-size: var(--text-sm); color: var(--text-muted); }
+.project__more {
+  background: none;
+  border: 0;
+  align-self: stretch;
+  min-width: var(--tap);
+}
+.project__menu { grid-column: 1 / -1; display: flex; gap: var(--space-2); padding: 0 var(--space-3) var(--space-3); }
+.project__menu button { flex: 1; }
+.project__rename-input {
+  grid-column: 1 / -1;
+  margin: var(--space-2) var(--space-3);
+}
+.projects__file { display: flex; gap: var(--space-2); }
+.projects__file button { flex: 1; }
 
 .settings__summary {
   display: flex;
