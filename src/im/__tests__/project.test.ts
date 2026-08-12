@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { serializeProject, parseProject, PROJECT_VERSION } from '../project';
+import { serializeProject, parseProject, parseProjectValue, PROJECT_VERSION } from '../project';
 import { DEFAULT_SETTINGS, type Carrier } from '../types';
 
 const carriers: Carrier[] = [
@@ -252,3 +252,46 @@ describe('device fields', () => {
     expect(parsed.carriers[0].deviceId).toBeUndefined();
   });
 });
+
+describe('parseProjectValue', () => {
+  it('validates an already-parsed value', () => {
+    const parsed = parseProjectValue({
+      version: PROJECT_VERSION,
+      name: 'Ponec',
+      carriers: [{ id: 'a', label: 'Mic 1', freqKHz: 510000, locked: false }],
+      settings: {},
+    });
+    expect('error' in parsed).toBe(false);
+    if ('error' in parsed) return;
+    expect(parsed.name).toBe('Ponec');
+    expect(parsed.carriers).toHaveLength(1);
+  });
+
+  it('rejects a value that is not an object', () => {
+    expect(parseProjectValue('nope')).toEqual({ error: expect.any(String) });
+    expect(parseProjectValue(null)).toEqual({ error: expect.any(String) });
+  });
+
+  it('rejects a version from a newer app', () => {
+    const parsed = parseProjectValue({
+      version: PROJECT_VERSION + 1,
+      name: 'x',
+      carriers: [],
+      settings: {},
+    });
+    expect('error' in parsed).toBe(true);
+  });
+
+  it('reaches the same verdict as parseProject on the same payload', () => {
+    const payload = {
+      version: PROJECT_VERSION,
+      name: 'Same',
+      carriers: [
+        { id: 'a', label: 'Mic 1', freqKHz: 510000, locked: true, deviceId: 'wisycom-mtp60' },
+      ],
+      settings: { nearHitWindowKHz: 42 },
+    };
+    expect(parseProjectValue(payload)).toEqual(parseProject(JSON.stringify(payload)));
+  });
+});
+

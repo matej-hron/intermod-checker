@@ -115,11 +115,17 @@ export function parseProject(json: string): ProjectFile | { error: string } {
   } catch {
     return { error: 'The file is not valid JSON.' };
   }
+  return parseProjectValue(raw);
+}
 
-  if (typeof raw !== 'object' || raw === null) {
+// Storage and files carry the same untrusted shape, so both go through this
+// one validator. A second copy of these checks would drift from this one, and
+// the copy guarding what the app opens is the one that matters.
+export function parseProjectValue(value: unknown): ProjectFile | { error: string } {
+  if (typeof value !== 'object' || value === null) {
     return { error: 'The file is not a project.' };
   }
-  const candidate = raw as Record<string, unknown>;
+  const candidate = value as Record<string, unknown>;
 
   if (typeof candidate.version !== 'number') {
     return { error: 'The file is not a project.' };
