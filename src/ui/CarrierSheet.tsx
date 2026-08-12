@@ -7,7 +7,7 @@ import { DevicePicker } from './DevicePicker';
 export function CarrierSheet() {
   const carriers = useProjectStore((s) => s.carriers);
   const updateCarrier = useProjectStore((s) => s.updateCarrier);
-  const removeCarrier = useProjectStore((s) => s.removeCarrier);
+  const deleteCarrier = useProjectStore((s) => s.deleteCarrierWithUndo);
   const editingId = useViewStore((s) => s.editingCarrierId);
   const closeCarrier = useViewStore((s) => s.closeCarrier);
   const openTune = useViewStore((s) => s.openTune);
@@ -77,11 +77,9 @@ export function CarrierSheet() {
         <button
           type="button"
           className="btn--ghost"
-          onClick={() => {
-            if (window.confirm(`Delete ${carrier.label}? This cannot be undone.`)) {
-              removeCarrier(carrier.id);
-            }
-          }}
+          // The sheet closes on its own: the carrier it is bound to is gone,
+          // which trips the existing `carrier === null` return.
+          onClick={() => deleteCarrier(carrier.id)}
         >
           Delete
         </button>

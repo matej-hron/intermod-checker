@@ -9,6 +9,7 @@ import { TuneView } from './ui/TuneView';
 import { AppBar } from './ui/AppBar';
 import { Nav } from './ui/Nav';
 import { ActionBar } from './ui/ActionBar';
+import { UndoBar } from './ui/UndoBar';
 import { UpdatePrompt } from './ui/UpdatePrompt';
 import { useViewStore, type ViewName } from './state/viewStore';
 import { useTuneStore } from './state/tuneStore';
@@ -65,6 +66,7 @@ export default function App() {
         </p>
       </footer>
 
+      <UndoBar />
       <UpdatePrompt />
     </div>
   );
