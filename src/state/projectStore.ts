@@ -11,6 +11,7 @@ import {
   deleteProject,
   duplicateProject,
   isFull,
+  MAX_CARRIERS,
   migrateSingleProject,
   newLibrary,
   parseLibrary,
@@ -48,6 +49,8 @@ interface ProjectState {
   addCarrier: () => string;
   updateCarrier: (id: string, patch: Partial<Omit<Carrier, 'id'>>) => void;
   removeCarrier: (id: string) => void;
+  deleteCarrierWithUndo: (id: string) => void;
+  restoreCarrier: (carrier: Carrier, index: number) => void;
   setSettings: (patch: Partial<Settings>) => void;
   resetSettings: () => void;
   loadProject: (file: ProjectFile) => void;
@@ -156,6 +159,9 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     useAnalysisStore.getState().clear();
     useTuneStore.getState().clear();
     useViewStore.getState().closeCarrier();
+    // A pending undo must never survive into a different project: its index
+    // means nothing there and restoring would inject a mic the user never made.
+    useViewStore.getState().clearPendingDelete();
   };
 
   // Renaming changes nothing the analysis depends on, so it must not discard
@@ -205,6 +211,27 @@ export const useProjectStore = create<ProjectState>((set, get) => {
 
     removeCarrier: (id) => {
       update({ carriers: get().carriers.filter((c) => c.id !== id) });
+    },
+
+    // Pairs removal with the undo record in one action, so no caller can
+    // delete a carrier and forget to offer the way back.
+    deleteCarrierWithUndo: (id) => {
+      const carriers = get().carriers;
+      const index = carriers.findIndex((c) => c.id === id);
+      if (index === -1) return;
+      const carrier = carriers[index];
+      update({ carriers: carriers.filter((c) => c.id !== id) });
+      useViewStore.getState().requestUndo(carrier, index);
+    },
+
+    restoreCarrier: (carrier, index) => {
+      const carriers = get().carriers;
+      if (carriers.length >= MAX_CARRIERS) return;
+      if (carriers.some((c) => c.id === carrier.id)) return;
+      const next = [...carriers];
+      // The list may have shrunk while the undo bar was up.
+      next.splice(Math.min(Math.max(index, 0), next.length), 0, carrier);
+      update({ carriers: next });
     },
 
     setSettings: (patch) => update({ settings: { ...get().settings, ...patch } }),
