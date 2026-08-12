@@ -1,6 +1,11 @@
 import { generateCandidates } from './candidates';
-import { evaluateCandidate, explanationText } from './evaluate';
-import type { Verdict } from './criteria';
+import { evaluateCandidate, explanationText, type CandidateEvaluation } from './evaluate';
+import {
+  EXCLUSION_CRITERION,
+  SPACING_CRITERION,
+  criterionLabel,
+  type Verdict,
+} from './criteria';
 import type { Carrier, Settings } from './types';
 
 /** How far either side of the typed frequency the live check will look. */
@@ -19,12 +24,36 @@ export interface LiveCheckResult {
   searched: boolean;
 }
 
-const CLEAR: LiveCheckResult = {
-  verdict: 'clear',
+const CLEAR_RESULT_FIELDS = {
+  verdict: 'clear' as Verdict,
   explanation: '',
-  alternatives: [],
+  alternatives: [] as number[],
   searched: false,
 };
+
+function clearResult(): LiveCheckResult {
+  return { ...CLEAR_RESULT_FIELDS, alternatives: [] };
+}
+
+/**
+ * Derives a non-empty explanation string when `evaluateCandidate` returned a
+ * non-clear verdict but `explanation` is null (spacing or exclusion hits).
+ */
+function buildExplanation(evaluation: CandidateEvaluation): string {
+  if (evaluation.explanation !== null) return explanationText(evaluation.explanation);
+
+  const parts: string[] = [];
+  if (evaluation.verdicts[SPACING_CRITERION] !== 'clear') {
+    parts.push(criterionLabel(SPACING_CRITERION));
+  }
+  if (evaluation.verdicts[EXCLUSION_CRITERION] !== 'clear') {
+    parts.push(criterionLabel(EXCLUSION_CRITERION));
+  }
+  if (parts.length > 0) return parts.join(' · ');
+
+  // Should not arise; guard against returning 'Clear' or ''.
+  return `Conflict (${evaluation.worst})`;
+}
 
 /**
  * Answers "is this frequency usable, and if not, what is nearby?" for a single
@@ -48,12 +77,12 @@ export function liveCheck(
   // A carrier can vanish between a debounce firing and this call — deleted, or
   // the project switched. Saying "clear" is wrong, but there is nothing to be
   // right about, and throwing would take the sheet down with it.
-  if (index === -1) return CLEAR;
+  if (index === -1) return clearResult();
 
   const freqs = carriers.map((c) => c.freqKHz);
   const evaluation = evaluateCandidate(freqs, index, candidateKHz, settings, carriers, 'full');
 
-  if (evaluation.worst === 'clear') return CLEAR;
+  if (evaluation.worst === 'clear') return clearResult();
 
   const alternatives: number[] = [];
   if (maxAlternatives > 0) {
@@ -69,7 +98,7 @@ export function liveCheck(
 
   return {
     verdict: evaluation.worst,
-    explanation: explanationText(evaluation.explanation),
+    explanation: buildExplanation(evaluation),
     alternatives,
     searched: true,
   };

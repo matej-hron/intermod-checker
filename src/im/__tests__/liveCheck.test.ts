@@ -59,6 +59,9 @@ describe('liveCheck', () => {
     const r = liveCheck(tight, settings, 'b', 600100);
     expect(r.verdict).toBe('exact');
     expect(r.searched).toBe(true);
+    expect(r.explanation).not.toBe('Clear');
+    expect(r.explanation).not.toBe('');
+    expect(r.explanation.toLowerCase()).toContain('spacing');
   });
 
   it('catches an excluded range', () => {
@@ -68,6 +71,21 @@ describe('liveCheck', () => {
     };
     const r = liveCheck([carrier('a', 600000)], excluded, 'a', 600000);
     expect(r.verdict).toBe('exact');
+    expect(r.explanation).not.toBe('Clear');
+    expect(r.explanation).not.toBe('');
+    expect(r.explanation.toLowerCase()).toContain('excluded');
+  });
+
+  it('mentions both criteria when spacing and exclusion both fire', () => {
+    const tight = [carrier('a', 600000), carrier('b', 600100)];
+    const excluded: Settings = {
+      ...settings,
+      exclusions: [{ id: 'x', startKHz: 599000, endKHz: 601000, label: 'DTV' }],
+    };
+    const r = liveCheck(tight, excluded, 'b', 600100);
+    expect(r.verdict).toBe('exact');
+    expect(r.explanation.toLowerCase()).toContain('spacing');
+    expect(r.explanation.toLowerCase()).toContain('excluded');
   });
 
   it('returns fewer than the maximum rather than padding when the window is exhausted', () => {
@@ -87,5 +105,14 @@ describe('liveCheck', () => {
   it('judges a locked carrier normally', () => {
     const locked = [carrier('a', 600000), carrier('b', 601000), carrier('c', 602000, true)];
     expect(liveCheck(locked, settings, 'c', 602000).verdict).toBe('exact');
+  });
+
+  it('returns independent objects so mutating one clear result does not affect another', () => {
+    const spread = [carrier('a', 510000), carrier('b', 530000), carrier('c', 551000)];
+    const r1 = liveCheck(spread, settings, 'c', 551000);
+    r1.alternatives.push(999999);
+    const r2 = liveCheck(spread, settings, 'c', 551000);
+    expect(r2.alternatives).toEqual([]);
+    expect(r1).not.toBe(r2);
   });
 });
