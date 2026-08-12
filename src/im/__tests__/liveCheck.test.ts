@@ -88,6 +88,32 @@ describe('liveCheck', () => {
     expect(r.explanation.toLowerCase()).toContain('excluded');
   });
 
+  it('mentions both the order and spacing when a product hit and a spacing violation coincide', () => {
+    // c sits on the 2b-a = 602000 product and d is 100 kHz away, under the minimum.
+    const both = [
+      carrier('a', 600000),
+      carrier('b', 601000),
+      carrier('c', 602000),
+      carrier('d', 602100),
+    ];
+    const r = liveCheck(both, settings, 'c', 602000);
+    expect(r.verdict).toBe('exact');
+    expect(r.explanation.toLowerCase()).toContain('order');
+    expect(r.explanation.toLowerCase()).toContain('spacing');
+  });
+
+  it('mentions both the order and exclusion when a product hit lands in an excluded range', () => {
+    // c sits on the 2b-a = 602000 product, which also falls inside the excluded range.
+    const excluded: Settings = {
+      ...settings,
+      exclusions: [{ id: 'x', startKHz: 601500, endKHz: 602500, label: 'DTV' }],
+    };
+    const r = liveCheck(THIRD_ORDER, excluded, 'c', 602000);
+    expect(r.verdict).toBe('exact');
+    expect(r.explanation.toLowerCase()).toContain('order');
+    expect(r.explanation.toLowerCase()).toContain('excluded');
+  });
+
   it('returns fewer than the maximum rather than padding when the window is exhausted', () => {
     // A 25 kHz window at a 25 kHz step offers one alternative either side at most.
     const r = liveCheck(THIRD_ORDER, settings, 'c', 602000, 3, 25);

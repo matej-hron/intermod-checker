@@ -36,6 +36,12 @@ export function CarrierSheet() {
       setCheck(null);
       return;
     }
+    // Drop the previous verdict before recomputing: it was computed for a
+    // different frequency, and if the sheet closes inside the debounce window
+    // (e.g. Done commits the blur and unmounts us) a stale "Clear" would be the
+    // last thing shown for a frequency that conflicts. Blank until the new
+    // verdict lands — mirrors projectStore.update() clearing analysis on edit.
+    setCheck(null);
     const timer = setTimeout(() => {
       setCheck(liveCheck(carriers, settings, carrierId, freqKHz));
     }, 200);
@@ -75,7 +81,7 @@ export function CarrierSheet() {
         </label>
 
         {check !== null && (
-          <div className="live-check">
+          <div className="live-check" role="status">
             {check.verdict === 'clear' ? (
               <p className="live-check__line">
                 <span className="dot dot--clear">

@@ -36,13 +36,17 @@ function clearResult(): LiveCheckResult {
 }
 
 /**
- * Derives a non-empty explanation string when `evaluateCandidate` returned a
- * non-clear verdict but `explanation` is null (spacing or exclusion hits).
+ * Derives a non-empty explanation string for a non-clear verdict.
+ *
+ * A candidate can trip a product hit *and* a spacing or exclusion criterion at
+ * once — `evaluate.ts` sets both unconditionally. So the spacing and exclusion
+ * labels are appended whenever those criteria are non-clear, not only when the
+ * product `explanation` is null; otherwise the stated cause would understate
+ * what the user must fix.
  */
 function buildExplanation(evaluation: CandidateEvaluation): string {
-  if (evaluation.explanation !== null) return explanationText(evaluation.explanation);
-
   const parts: string[] = [];
+  if (evaluation.explanation !== null) parts.push(explanationText(evaluation.explanation));
   if (evaluation.verdicts[SPACING_CRITERION] !== 'clear') {
     parts.push(criterionLabel(SPACING_CRITERION));
   }
