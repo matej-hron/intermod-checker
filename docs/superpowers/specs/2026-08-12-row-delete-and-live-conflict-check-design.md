@@ -1,6 +1,6 @@
 # Delete from the list, and a live conflict check while tuning
 
-Status: draft — awaiting user review
+Status: implemented
 Date: 2026-08-12
 
 ## 1. The problem

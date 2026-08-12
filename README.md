@@ -55,6 +55,22 @@ name, frequency, device model, lock toggle. The editor also holds a **Tune**
 button to preview every available frequency for that carrier, and a **Delete**
 button. All changes apply live and are autosaved.
 
+### Deleting a frequency
+
+Each row in the frequency list has a delete button. Deleting takes effect
+immediately and raises an undo bar for five seconds — there is no confirmation
+dialog. Undo puts the mic back in its original position. The undo expires when
+the five seconds pass, when you press Undo, or when you switch projects.
+
+### Live conflict check
+
+While you are editing a frequency, the sheet says whether that frequency is
+clear or conflicts, using the same analysis the Tune view uses. When it
+conflicts, it names the interference — for example `3rd order · Mic 1 + Mic 2` —
+and offers up to three of the nearest clear frequencies within 0.5 MHz as
+tappable chips. If nothing within that window is clear, it says so and points
+you at Tune, which searches wider.
+
 Projects are managed as a library stored on your device. You can create, rename,
 duplicate, and delete projects; the app keeps up to **30 projects**. Projects
 switch instantly, and you never lose more than the open one — even if a project
