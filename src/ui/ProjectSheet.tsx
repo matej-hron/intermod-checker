@@ -79,7 +79,12 @@ export function ProjectSheet() {
         <span aria-hidden="true">▾</span>
       </button>
 
-      <dialog ref={dialog} className="sheet sheet--tall" aria-label="Projects">
+      <dialog
+        ref={dialog}
+        className="sheet sheet--tall"
+        aria-label="Projects"
+        onClose={() => { setMenuId(null); setRenamingId(null); }}
+      >
         <div className="sheet__body">
           <div className="sheet__header">
             <h2>Projects</h2>
@@ -164,6 +169,7 @@ export function ProjectSheet() {
                       <button
                         type="button"
                         onClick={() => {
+                          renameCancelled.current = false;
                           setRenamingId(p.id);
                           setRenameValue(p.name);
                           setMenuId(null);
