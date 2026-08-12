@@ -7,6 +7,7 @@ export * from './window';
 export * from './criteria';
 export * from './evaluate';
 export * from './candidates';
+export * from './liveCheck';
 export * from './format';
 export * from './analyze';
 export * from './validate';

@@ -8,6 +8,7 @@ export function CarrierList() {
   const carriers = useProjectStore((s) => s.carriers);
   const addCarrier = useProjectStore((s) => s.addCarrier);
   const updateCarrier = useProjectStore((s) => s.updateCarrier);
+  const deleteCarrier = useProjectStore((s) => s.deleteCarrierWithUndo);
   const result = useAnalysisStore((s) => s.result);
   const issues = useAnalysisStore((s) => s.issues);
   const openCarrier = useViewStore((s) => s.openCarrier);
@@ -56,6 +57,14 @@ export function CarrierList() {
               onClick={() => updateCarrier(carrier.id, { locked: !carrier.locked })}
             >
               <span aria-hidden="true">{carrier.locked ? '🔒' : '🔓'}</span>
+            </button>
+            <button
+              type="button"
+              className="carrier__delete"
+              aria-label={`Delete ${carrier.label}`}
+              onClick={() => deleteCarrier(carrier.id)}
+            >
+              <span aria-hidden="true">🗑</span>
             </button>
           </li>
         ))}
