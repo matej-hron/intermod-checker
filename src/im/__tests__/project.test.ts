@@ -268,8 +268,16 @@ describe('parseProjectValue', () => {
   });
 
   it('rejects a value that is not an object', () => {
-    expect(parseProjectValue('nope')).toEqual({ error: expect.any(String) });
-    expect(parseProjectValue(null)).toEqual({ error: expect.any(String) });
+    const resultString = parseProjectValue('nope');
+    expect('error' in resultString).toBe(true);
+    if ('error' in resultString) {
+      expect(resultString.error).toBe('The file is not a project.');
+    }
+    const resultNull = parseProjectValue(null);
+    expect('error' in resultNull).toBe(true);
+    if ('error' in resultNull) {
+      expect(resultNull.error).toBe('The file is not a project.');
+    }
   });
 
   it('rejects a version from a newer app', () => {
@@ -280,6 +288,9 @@ describe('parseProjectValue', () => {
       settings: {},
     });
     expect('error' in parsed).toBe(true);
+    if ('error' in parsed) {
+      expect(parsed.error).toBe('This project was saved by a newer version of the app.');
+    }
   });
 
   it('reaches the same verdict as parseProject on the same payload', () => {
@@ -292,6 +303,60 @@ describe('parseProjectValue', () => {
       settings: { nearHitWindowKHz: 42 },
     };
     expect(parseProjectValue(payload)).toEqual(parseProject(JSON.stringify(payload)));
+  });
+
+  it('rejects a version below 1', () => {
+    const parsed = parseProjectValue({
+      version: 0,
+      name: 'x',
+      carriers: [],
+      settings: {},
+    });
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) {
+      expect(parsed.error).toBe('The file is not a project.');
+    }
+  });
+
+  it('rejects a malformed carrier', () => {
+    const parsed = parseProjectValue({
+      version: PROJECT_VERSION,
+      name: 'x',
+      carriers: [{ id: 'a', label: 'Mic 1' }],
+      settings: {},
+    });
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) {
+      expect(parsed.error).toBe('The project contains no readable frequency list.');
+    }
+  });
+
+  it('rejects duplicate carrier identifiers', () => {
+    const parsed = parseProjectValue({
+      version: PROJECT_VERSION,
+      name: 'x',
+      carriers: [
+        { id: 'dup', label: 'First', freqKHz: 510000, locked: false },
+        { id: 'dup', label: 'Second', freqKHz: 530000, locked: false },
+      ],
+      settings: {},
+    });
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) {
+      expect(parsed.error).toBe('The project contains duplicate frequency identifiers.');
+    }
+  });
+
+  it('rejects a missing carriers array', () => {
+    const parsed = parseProjectValue({
+      version: PROJECT_VERSION,
+      name: 'x',
+      settings: {},
+    });
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) {
+      expect(parsed.error).toBe('The project contains no readable frequency list.');
+    }
   });
 });
 
