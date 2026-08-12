@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { serializeProject, parseProject, PROJECT_VERSION } from '../project';
+import { serializeProject, parseProject, parseProjectValue, PROJECT_VERSION } from '../project';
 import { DEFAULT_SETTINGS, type Carrier } from '../types';
 
 const carriers: Carrier[] = [
@@ -252,3 +252,111 @@ describe('device fields', () => {
     expect(parsed.carriers[0].deviceId).toBeUndefined();
   });
 });
+
+describe('parseProjectValue', () => {
+  it('validates an already-parsed value', () => {
+    const parsed = parseProjectValue({
+      version: PROJECT_VERSION,
+      name: 'Ponec',
+      carriers: [{ id: 'a', label: 'Mic 1', freqKHz: 510000, locked: false }],
+      settings: {},
+    });
+    expect('error' in parsed).toBe(false);
+    if ('error' in parsed) return;
+    expect(parsed.name).toBe('Ponec');
+    expect(parsed.carriers).toHaveLength(1);
+  });
+
+  it('rejects a value that is not an object', () => {
+    const resultString = parseProjectValue('nope');
+    expect('error' in resultString).toBe(true);
+    if ('error' in resultString) {
+      expect(resultString.error).toBe('The file is not a project.');
+    }
+    const resultNull = parseProjectValue(null);
+    expect('error' in resultNull).toBe(true);
+    if ('error' in resultNull) {
+      expect(resultNull.error).toBe('The file is not a project.');
+    }
+  });
+
+  it('rejects a version from a newer app', () => {
+    const parsed = parseProjectValue({
+      version: PROJECT_VERSION + 1,
+      name: 'x',
+      carriers: [],
+      settings: {},
+    });
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) {
+      expect(parsed.error).toBe('This project was saved by a newer version of the app.');
+    }
+  });
+
+  it('reaches the same verdict as parseProject on the same payload', () => {
+    const payload = {
+      version: PROJECT_VERSION,
+      name: 'Same',
+      carriers: [
+        { id: 'a', label: 'Mic 1', freqKHz: 510000, locked: true, deviceId: 'wisycom-mtp60' },
+      ],
+      settings: { nearHitWindowKHz: 42 },
+    };
+    expect(parseProjectValue(payload)).toEqual(parseProject(JSON.stringify(payload)));
+  });
+
+  it('rejects a version below 1', () => {
+    const parsed = parseProjectValue({
+      version: 0,
+      name: 'x',
+      carriers: [],
+      settings: {},
+    });
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) {
+      expect(parsed.error).toBe('The file is not a project.');
+    }
+  });
+
+  it('rejects a malformed carrier', () => {
+    const parsed = parseProjectValue({
+      version: PROJECT_VERSION,
+      name: 'x',
+      carriers: [{ id: 'a', label: 'Mic 1' }],
+      settings: {},
+    });
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) {
+      expect(parsed.error).toBe('The project contains no readable frequency list.');
+    }
+  });
+
+  it('rejects duplicate carrier identifiers', () => {
+    const parsed = parseProjectValue({
+      version: PROJECT_VERSION,
+      name: 'x',
+      carriers: [
+        { id: 'dup', label: 'First', freqKHz: 510000, locked: false },
+        { id: 'dup', label: 'Second', freqKHz: 530000, locked: false },
+      ],
+      settings: {},
+    });
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) {
+      expect(parsed.error).toBe('The project contains duplicate frequency identifiers.');
+    }
+  });
+
+  it('rejects a missing carriers array', () => {
+    const parsed = parseProjectValue({
+      version: PROJECT_VERSION,
+      name: 'x',
+      settings: {},
+    });
+    expect('error' in parsed).toBe(true);
+    if ('error' in parsed) {
+      expect(parsed.error).toBe('The project contains no readable frequency list.');
+    }
+  });
+});
+

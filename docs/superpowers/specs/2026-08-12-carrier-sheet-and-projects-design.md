@@ -1,6 +1,6 @@
 # Compact carrier rows, a carrier edit sheet, and a project library
 
-Status: draft — awaiting user review
+Status: implemented
 Date: 2026-08-12
 
 ## 1. The problem

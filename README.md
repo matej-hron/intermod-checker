@@ -35,8 +35,8 @@ replacement frequencies when they do.
   available to it, each rated against the interference tests that apply.
 - Runs the whole search on a background worker, so a 12-carrier scan does not
   freeze the page.
-- Saves your project to `localStorage` automatically, and can export it to or
-  import it from a JSON file.
+- Keeps multiple projects on your device, with create, rename, duplicate, delete,
+  and switch controls. Automatically saves all changes to your browser.
 
 ## On a phone
 
@@ -46,6 +46,25 @@ above it, and the Tune view shows candidate frequencies as a filtered list of
 large tap targets — defaulting to the clear ones, with the nearest clear
 frequency pinned at the top. From 768 px the same views expand: the tabs move
 to the top and Tune shows the full scored matrix.
+
+## The Setup screen
+
+Each microphone appears as a compact two-line row showing its name, frequency,
+device, and analysis status. Tapping a row opens an editor for every control:
+name, frequency, device model, lock toggle. The editor also holds a **Tune**
+button to preview every available frequency for that carrier, and a **Delete**
+button. All changes apply live and are autosaved.
+
+Projects are managed as a library stored on your device. You can create, rename,
+duplicate, and delete projects; the app keeps up to **30 projects**. Projects
+switch instantly, and you never lose more than the open one — even if a project
+fails to load, the others remain. **Import** brings in a JSON file as a new
+project (unlike older versions, it does not overwrite what is open), and
+**Export** writes the current project in the same format, readable by any build.
+
+Your projects live in this browser's storage only. Clearing your browser's site
+data will erase them; **Export** is the only backup. If you reinstall or switch
+browsers, use Import to recover a saved project file.
 
 ## Installing it
 

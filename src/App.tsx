@@ -1,4 +1,5 @@
 import { CarrierList } from './ui/CarrierList';
+import { CarrierSheet } from './ui/CarrierSheet';
 import { SettingsPanel } from './ui/SettingsPanel';
 import { ResultsSummary } from './ui/ResultsSummary';
 import { ConflictList } from './ui/ConflictList';
@@ -37,6 +38,7 @@ export default function App() {
           <>
             <CarrierList />
             <SettingsPanel />
+            <CarrierSheet />
           </>
         )}
 
