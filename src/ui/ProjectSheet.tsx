@@ -19,6 +19,7 @@ export function ProjectSheet() {
 
   const dialog = useRef<HTMLDialogElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const renameCancelled = useRef(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [menuId, setMenuId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -53,6 +54,10 @@ export function ProjectSheet() {
   };
 
   const commitRename = (): void => {
+    if (renameCancelled.current) {
+      renameCancelled.current = false;
+      return;
+    }
     if (renamingId !== null) {
       const trimmed = renameValue.trim();
       if (trimmed) renameProject(renamingId, trimmed);
@@ -115,7 +120,12 @@ export function ProjectSheet() {
                       onBlur={commitRename}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') { commitRename(); }
-                        if (e.key === 'Escape') { setRenamingId(null); }
+                        if (e.key === 'Escape') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          renameCancelled.current = true;
+                          setRenamingId(null);
+                        }
                       }}
                     />
                   ) : (

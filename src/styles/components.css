@@ -264,6 +264,10 @@
 .project--active { border-color: var(--accent); }
 .project__open {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch;
+  justify-items: stretch;
+  width: 100%;
   gap: var(--space-1);
   padding: var(--space-3);
   text-align: left;
