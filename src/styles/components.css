@@ -708,3 +708,32 @@
   font-size: var(--text-sm);
   color: var(--text-muted);
 }
+
+/* About & credits — a plain link-styled trigger under the disclaimer, so it
+   never competes with the app bar's project control for thumb space. */
+.about__trigger {
+  padding: 0;
+  margin-top: var(--space-2);
+  color: var(--accent);
+  text-decoration: underline;
+}
+.about__heading {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.about__authors {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.about__authors a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  color: var(--accent);
+}

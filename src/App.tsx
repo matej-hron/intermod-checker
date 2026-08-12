@@ -10,6 +10,7 @@ import { AppBar } from './ui/AppBar';
 import { Nav } from './ui/Nav';
 import { ActionBar } from './ui/ActionBar';
 import { UndoBar } from './ui/UndoBar';
+import { AboutSheet } from './ui/AboutSheet';
 import { UpdatePrompt } from './ui/UpdatePrompt';
 import { useViewStore, type ViewName } from './state/viewStore';
 import { useTuneStore } from './state/tuneStore';
@@ -64,6 +65,7 @@ export default function App() {
           Treat its output as a planning aid, not a guarantee — always verify on
           site before a performance.
         </p>
+        <AboutSheet />
       </footer>
 
       <UndoBar />
