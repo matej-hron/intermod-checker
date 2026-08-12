@@ -12,3 +12,4 @@ export * from './analyze';
 export * from './validate';
 export * from './suggest';
 export * from './project';
+export * from './library';
