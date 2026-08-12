@@ -18,6 +18,7 @@ import {
   touchProject,
   type Carrier,
   type Library,
+  type Settings,
 } from '../index';
 
 function carriers(label = 'Mic 1'): Carrier[] {
@@ -164,6 +165,23 @@ describe('touchProject', () => {
     expect(activeProject(lib).carriers).toEqual(next);
     expect(activeProject(lib).updatedAt).toBe(7000);
   });
+
+  it('does not alias caller settings in the stored project', () => {
+    const settings: Settings = {
+      ...DEFAULT_SETTINGS,
+      deviationKHz: 50,
+      exclusions: [{ id: 'e1', label: 'test', startKHz: 1000, endKHz: 2000 }],
+    };
+    const lib = touchProject(base(), 'p1', 'Ponec', carriers(), settings, 7000);
+    const stored = activeProject(lib).settings;
+    // Mutate the caller's settings object after touchProject returns
+    settings.deviationKHz = 99;
+    settings.exclusions.push({ id: 'e2', label: 'another', startKHz: 3000, endKHz: 4000 });
+    // Assert the stored project's settings remain unchanged (value, not identity)
+    expect(stored.deviationKHz).toBe(50);
+    expect(stored.exclusions).toHaveLength(1);
+    expect(stored.exclusions[0].startKHz).toBe(1000);
+  });
 });
 
 describe('serialize and parse', () => {
@@ -191,6 +209,19 @@ describe('serialize and parse', () => {
     expect(parsed).not.toBeNull();
     expect(parsed!.projects).toHaveLength(1);
     expect(parsed!.projects[0].id).toBe('p2');
+  });
+
+  it('repairs activeId when the active project is unreadable', () => {
+    const lib = createProject(base(), 'good', 2000, 'p2', carriers());
+    const raw = JSON.parse(serializeLibrary(lib)) as Record<string, unknown>;
+    // Corrupt the active project (p2 at index 0) so only p1 survives
+    (raw.projects as unknown[])[0] = { id: 'p2', name: 'broken', updatedAt: 1, carriers: 'not a list' };
+    const parsed = parseLibrary(JSON.stringify(raw));
+    expect(parsed).not.toBeNull();
+    expect(parsed!.projects).toHaveLength(1);
+    expect(parsed!.projects[0].id).toBe('p1');
+    // activeId should be repaired to the only surviving project
+    expect(parsed!.activeId).toBe('p1');
   });
 
   it('returns null when every project is unreadable', () => {

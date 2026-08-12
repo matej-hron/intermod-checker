@@ -145,7 +145,13 @@ export function touchProject(
     ...lib,
     projects: lib.projects.map((p) =>
       p.id === id
-        ? { ...p, name: cleanName(name), carriers: copyCarriers(carriers), settings, updatedAt: now }
+        ? {
+            ...p,
+            name: cleanName(name),
+            carriers: copyCarriers(carriers),
+            settings: { ...settings, exclusions: settings.exclusions.map((e) => ({ ...e })) },
+            updatedAt: now,
+          }
         : p,
     ),
   };
@@ -232,8 +238,8 @@ export function migrateSingleProject(json: string, id: string, now: number): Lib
         id,
         name: parsed.name,
         updatedAt: now,
-        carriers: parsed.carriers,
-        settings: parsed.settings,
+        carriers: copyCarriers(parsed.carriers),
+        settings: { ...parsed.settings, exclusions: parsed.settings.exclusions.map((e) => ({ ...e })) },
       },
     ],
   };
