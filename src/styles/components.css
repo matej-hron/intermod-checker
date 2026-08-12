@@ -220,7 +220,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.carrier__freq { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.carrier__freq { font-family: var(--mono); font-variant-numeric: tabular-nums; flex: 0 0 auto; margin-left: auto; }
 .carrier__device {
   flex: 1;
   min-width: 0;
@@ -230,6 +230,7 @@
   font-size: var(--text-sm);
   color: var(--text-muted);
 }
+.carrier__badge { flex: 0 0 auto; margin-left: auto; font-size: var(--text-sm); }
 .carrier__lock {
   align-self: center;
   min-width: var(--tap);

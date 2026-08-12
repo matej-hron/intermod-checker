@@ -36,16 +36,16 @@ export function CarrierList() {
               <span className="carrier__line">
                 <span className="carrier__label">{carrier.label}</span>
                 <span className="carrier__freq">{kHzToMHzText(carrier.freqKHz)} MHz</span>
-                {conflicted.has(carrier.id) ? (
-                  <span className="badge badge--bad">Conflict</span>
-                ) : result ? (
-                  <span className="badge badge--good">Clear</span>
-                ) : (
-                  <span className="badge">Not analysed</span>
-                )}
               </span>
               <span className="carrier__line">
                 <span className="carrier__device">{describeCarrierDevice(carrier)}</span>
+                {conflicted.has(carrier.id) ? (
+                  <span className="badge badge--bad carrier__badge">Conflict</span>
+                ) : result ? (
+                  <span className="badge badge--good carrier__badge">Clear</span>
+                ) : (
+                  <span className="badge carrier__badge">Not analysed</span>
+                )}
               </span>
             </button>
             <button
