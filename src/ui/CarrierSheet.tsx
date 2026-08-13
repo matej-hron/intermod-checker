@@ -4,6 +4,7 @@ import { useViewStore } from '../state/viewStore';
 import { kHzToMHzText, liveCheck, type LiveCheckResult } from '../im';
 import { MHzInput } from './MHzInput';
 import { DevicePicker } from './DevicePicker';
+import { Icon } from './Icon';
 
 export function CarrierSheet() {
   const carriers = useProjectStore((s) => s.carriers);
@@ -58,108 +59,136 @@ export function CarrierSheet() {
       onClose={closeCarrier}
     >
       <div className="sheet__body">
-        <h2>Edit frequency</h2>
+        <div className="sheet__header">
+          <h2>Edit frequency</h2>
+          <button
+            type="button"
+            className="sheet__close"
+            aria-label="Close"
+            onClick={() => dialog.current?.close()}
+          >
+            <Icon name="close" />
+          </button>
+        </div>
 
-        <label className="field">
-          Name
-          <input
-            value={carrier.label}
-            onChange={(e) => updateCarrier(carrier.id, { label: e.target.value })}
-          />
-        </label>
+        <section className="sheet__section sheet__section--frequency">
+          <span className="eyebrow">Frequency</span>
 
-        <label className="field">
-          Frequency
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <MHzInput
-              label={`Frequency for ${carrier.label} in megahertz`}
-              valueKHz={carrier.freqKHz}
-              onCommit={(khz) => updateCarrier(carrier.id, { freqKHz: khz })}
+          <label className="field">
+            Name
+            <input
+              value={carrier.label}
+              onChange={(e) => updateCarrier(carrier.id, { label: e.target.value })}
             />
-            <span aria-hidden="true">MHz</span>
-          </div>
-        </label>
+          </label>
 
-        {check !== null && (
-          <div className="live-check" role="status">
-            {check.verdict === 'clear' ? (
-              <p className="live-check__line">
-                <span className="dot dot--clear">
-                  <span className="visually-hidden">Clear</span>
-                </span>
-                Clear — nothing lands here.
-              </p>
-            ) : (
-              <>
+          <label className="field">
+            Frequency
+            <div className="sheet__freq-field">
+              <MHzInput
+                label={`Frequency for ${carrier.label} in megahertz`}
+                valueKHz={carrier.freqKHz}
+                onCommit={(khz) => updateCarrier(carrier.id, { freqKHz: khz })}
+              />
+              <span className="sheet__freq-unit" aria-hidden="true">
+                MHz
+              </span>
+            </div>
+          </label>
+
+          {check !== null && (
+            <div className="live-check" role="status">
+              {check.verdict === 'clear' ? (
                 <p className="live-check__line">
-                  <span className={`dot dot--${check.verdict}`}>
-                    <span className="visually-hidden">
-                      {check.verdict === 'exact' ? 'Direct hit' : 'Near miss'}
-                    </span>
+                  <span className="dot dot--clear">
+                    <span className="visually-hidden">Clear</span>
                   </span>
-                  Conflicts: {check.explanation}
+                  Clear — nothing lands here.
                 </p>
-                {check.alternatives.length > 0 ? (
-                  <p className="live-check__alts">
-                    <span className="live-check__alts-label">Nearest clear:</span>
-                    {check.alternatives.map((khz) => (
-                      <button
-                        key={khz}
-                        type="button"
-                        className="live-check__chip"
-                        aria-label={`Use ${kHzToMHzText(khz)} megahertz`}
-                        onClick={() => updateCarrier(carrier.id, { freqKHz: khz })}
-                      >
-                        {kHzToMHzText(khz)}
-                      </button>
-                    ))}
+              ) : (
+                <>
+                  <p className="live-check__line">
+                    <span className={`dot dot--${check.verdict}`}>
+                      <span className="visually-hidden">
+                        {check.verdict === 'exact' ? 'Direct hit' : 'Near miss'}
+                      </span>
+                    </span>
+                    Conflicts: {check.explanation}
                   </p>
-                ) : (
-                  <p className="live-check__none">
-                    No clear frequency within 0.5 MHz — open Tune to search wider.
-                  </p>
-                )}
-              </>
-            )}
+                  {check.alternatives.length > 0 ? (
+                    <p className="live-check__alts">
+                      <span className="live-check__alts-label">Nearest clear:</span>
+                      {check.alternatives.map((khz) => (
+                        <button
+                          key={khz}
+                          type="button"
+                          className="live-check__chip"
+                          aria-label={`Use ${kHzToMHzText(khz)} megahertz`}
+                          onClick={() => updateCarrier(carrier.id, { freqKHz: khz })}
+                        >
+                          {kHzToMHzText(khz)}
+                        </button>
+                      ))}
+                    </p>
+                  ) : (
+                    <p className="live-check__none">
+                      No clear frequency within 0.5 MHz — open Tune to search wider.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </section>
+
+        <section className="sheet__section sheet__section--device">
+          <span className="eyebrow">Device</span>
+          <DevicePicker carrier={carrier} />
+        </section>
+
+        <section className="sheet__section sheet__section--actions">
+          <span className="eyebrow">Actions</span>
+
+          <label className="field sheet__lock">
+            <input
+              type="checkbox"
+              checked={carrier.locked}
+              onChange={(e) => updateCarrier(carrier.id, { locked: e.target.checked })}
+              aria-label={`Lock the frequency of ${carrier.label}`}
+            />
+            Lock frequency
+          </label>
+
+          <div className="sheet__actions">
+            <button
+              type="button"
+              className="sheet__action"
+              onClick={() => openTune(carrier.id)}
+            >
+              <Icon name="tune" />
+              Tune this frequency
+            </button>
+
+            <button
+              type="button"
+              className="btn--ghost sheet__action"
+              // The sheet closes on its own: the carrier it is bound to is gone,
+              // which trips the existing `carrier === null` return.
+              onClick={() => deleteCarrier(carrier.id)}
+            >
+              <Icon name="delete" />
+              Delete
+            </button>
+
+            <button
+              type="button"
+              className="btn--primary sheet__action"
+              onClick={() => dialog.current?.close()}
+            >
+              Done
+            </button>
           </div>
-        )}
-
-        <DevicePicker carrier={carrier} />
-
-        <label className="field" style={{ flexDirection: 'row', alignItems: 'center', gap: 'var(--space-3)' }}>
-          <input
-            type="checkbox"
-            checked={carrier.locked}
-            onChange={(e) => updateCarrier(carrier.id, { locked: e.target.checked })}
-            aria-label={`Lock the frequency of ${carrier.label}`}
-          />
-          Lock frequency
-        </label>
-
-        <button
-          type="button"
-          onClick={() => openTune(carrier.id)}
-        >
-          Tune this frequency
-        </button>
-
-        <button
-          type="button"
-          className="btn--ghost"
-          // The sheet closes on its own: the carrier it is bound to is gone,
-          // which trips the existing `carrier === null` return.
-          onClick={() => deleteCarrier(carrier.id)}
-        >
-          Delete
-        </button>
-
-        <button
-          type="button"
-          className="btn--primary"
-          onClick={() => dialog.current?.close()}
-        >
-          Done
-        </button>
+        </section>
       </div>
     </dialog>
   );
