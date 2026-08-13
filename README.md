@@ -236,10 +236,9 @@ JSON file that you control.
   count.
 - Suggestion search is capped at 2000 candidate frequencies per carrier and
   may find nothing if the band is too congested or too narrow.
-- Device model presets — a catalogue of microphone models with per-model
-  tuning range, channel step, and deviation — are **planned future work**,
-  not a current feature. Today, deviation is a single setting shared by every
-  carrier.
+- Transmitter power is recorded per device but does not affect the
+  calculation — modelling it properly needs transmitter placement and
+  receiver sensitivity, which this tool does not know.
 
 ## Disclaimer
 
@@ -252,6 +251,10 @@ spectrum licensing and regulations, and a real-world scan and coordination
 with your equipment on site is still required before any performance.
 
 ## Documentation
+
+Tap **About & credits** at the bottom of the app for a short description and
+links to the authors, [Ivan Horak](https://www.linkedin.com/in/ivan-horak-97245919b/)
+and [Matej Hron](https://www.linkedin.com/in/matejhron/).
 
 - Design: `docs/superpowers/specs/2026-08-09-intermod-checker-design.md`
 - Plan: `docs/superpowers/plans/2026-08-09-intermod-checker.md`
