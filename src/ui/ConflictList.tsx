@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { carrierLetter, formatProduct, kHzToMHzText, type Hit } from '../im';
+import { carrierLetter, formatProduct, kHzToMHzText, type Hit, type Severity } from '../im';
 import { useAnalysisStore } from '../state/analysisStore';
 import { useProjectStore } from '../state/projectStore';
 
@@ -18,9 +18,22 @@ function contributors(coeffs: readonly number[], labels: readonly string[]): str
   return parts.join(' · ');
 }
 
+const SEVERITY_WEIGHT: Record<Severity, number> = {
+  high: 3,
+  medium: 2,
+  low: 1,
+};
+
+function worseHit(current: Hit | null, hit: Hit): Hit {
+  if (current === null) return hit;
+  return SEVERITY_WEIGHT[hit.severity] > SEVERITY_WEIGHT[current.severity]
+    ? hit
+    : current;
+}
+
 function HitRow({ hit, labels }: { hit: Hit; labels: readonly string[] }) {
   return (
-    <li className="conflict">
+    <li className={`conflict conflict--${hit.severity}`}>
       <div className="conflict__head">
         <span className={`badge badge--${hit.severity}`}>
           order {hit.product.order}
@@ -66,9 +79,12 @@ export function ConflictList() {
           const all = result.hitsByCarrierId[carrier.id] ?? [];
           const hits = showSelf ? all : all.filter((h) => !h.selfInvolving);
           const isOpen = expanded === carrier.id;
+          const worst = hits.reduce<Hit | null>(worseHit, null);
+          const classes = ['conflict'];
+          if (worst !== null) classes.push(`conflict--${worst.severity}`);
 
           return (
-            <li key={carrier.id} className="conflict">
+            <li key={carrier.id} className={classes.join(' ')}>
               <div className="conflict__head">
                 <button
                   type="button"

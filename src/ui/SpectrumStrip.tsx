@@ -25,29 +25,39 @@ export function SpectrumStrip() {
 
   return (
     <section className="panel">
-      <h2>Spectrum</h2>
+      <div className="panel__heading">
+        <div>
+          <span className="eyebrow">Field guide</span>
+          <h2>Spectrum</h2>
+          <p className="hint">
+            Carrier markers hold the tuned plan while the product lines show
+            where the band gets crowded.
+          </p>
+        </div>
+      </div>
       <div className="spectrum" role="img" aria-label={chartLabel}>
         <div className="spectrum__track">
-        {products.map((hit, i) => (
-          <span
-            key={`p-${i}`}
-            className={`spectrum__product spectrum__product--${hit.severity}`}
-            style={{ left: `${position(hit.product.freqKHz)}%` }}
-            title={`${kHzToMHzText(hit.product.freqKHz)} MHz, order ${hit.product.order}, ${hit.severity} severity`}
-          />
-        ))}
-        {carriers.map((carrier) => (
-          <span
-            key={carrier.id}
-            className={
-              conflicted.has(carrier.id)
-                ? 'spectrum__carrier spectrum__carrier--bad'
-                : 'spectrum__carrier'
-            }
-            style={{ left: `${position(carrier.freqKHz)}%` }}
-            title={`${carrier.label} — ${kHzToMHzText(carrier.freqKHz)} MHz${conflicted.has(carrier.id) ? ' (conflict)' : ''}`}
-          />
-        ))}
+          <div className="spectrum__grid" aria-hidden="true" />
+          {products.map((hit, i) => (
+            <span
+              key={`p-${i}`}
+              className={`spectrum__product spectrum__product--${hit.severity}`}
+              style={{ left: `${position(hit.product.freqKHz)}%` }}
+              title={`${kHzToMHzText(hit.product.freqKHz)} MHz, order ${hit.product.order}, ${hit.severity} severity`}
+            />
+          ))}
+          {carriers.map((carrier) => (
+            <span
+              key={carrier.id}
+              className={
+                conflicted.has(carrier.id)
+                  ? 'spectrum__carrier spectrum__carrier--bad'
+                  : 'spectrum__carrier'
+              }
+              style={{ left: `${position(carrier.freqKHz)}%` }}
+              title={`${carrier.label} — ${kHzToMHzText(carrier.freqKHz)} MHz${conflicted.has(carrier.id) ? ' (conflict)' : ''}`}
+            />
+          ))}
         </div>
       </div>
       <div className="spectrum__scale">

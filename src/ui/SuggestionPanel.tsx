@@ -2,6 +2,7 @@ import { kHzToMHzText } from '../im';
 import { useAnalysisStore } from '../state/analysisStore';
 import { useProjectStore } from '../state/projectStore';
 import { useViewStore } from '../state/viewStore';
+import { Icon } from './Icon';
 
 export function SuggestionPanel() {
   const suggestions = useAnalysisStore((s) => s.suggestions);
@@ -20,50 +21,66 @@ export function SuggestionPanel() {
 
   return (
     <section className="panel">
-      <h2>Suggested changes</h2>
+      <div className="panel__heading">
+        <div>
+          <span className="eyebrow">Retune suggestions</span>
+          <h2>Suggested changes</h2>
+        </div>
+      </div>
       <p className="hint">
         Each suggestion is calculated with the previous ones already applied.
         Run the analysis again afterwards to confirm the result: in a congested
         band the later carriers can run out of room, and any carrier listed
         without a replacement is left where it is.
       </p>
-      <ul>
+      <ul className="suggestion-list">
         {suggestions.map((suggestion) => (
           <li key={suggestion.carrierId} className="suggestion">
             {/* The device name and its current frequency read as one phrase, so
                 they stay in the same wrapper and wrap together. */}
             <div className="suggestion__values">
-              <strong>{labelFor(suggestion.carrierId)}</strong>{' '}
-              {kHzToMHzText(suggestion.fromKHz)} MHz →{' '}
+              <strong>{labelFor(suggestion.carrierId)}</strong>
+              <span className="suggestion__from">
+                {kHzToMHzText(suggestion.fromKHz)} MHz
+              </span>
+              <span className="suggestion__arrow" aria-hidden="true">
+                →
+              </span>
               {suggestion.toKHz === null ? (
                 <em>{suggestion.failureReason}</em>
               ) : (
                 <>
-                  <strong>{kHzToMHzText(suggestion.toKHz)} MHz</strong>{' '}
+                  <strong className="suggestion__to">
+                    {kHzToMHzText(suggestion.toKHz)} MHz
+                  </strong>{' '}
                   <span className="hint">({suggestion.distanceKHz} kHz away)</span>
                 </>
               )}
             </div>
-            {suggestion.toKHz !== null && (
+            <div className="suggestion__actions">
+              {suggestion.toKHz !== null && (
+                <button
+                  type="button"
+                  className="btn--primary"
+                  onClick={() => {
+                    applySuggestions([suggestion]);
+                    clear();
+                  }}
+                >
+                  <Icon name="analyse" size={18} />
+                  Apply
+                </button>
+              )}
               <button
                 type="button"
-                className="btn--primary"
-                onClick={() => {
-                  applySuggestions([suggestion]);
-                  clear();
-                }}
+                className="btn--ghost"
+                aria-label={`Choose a frequency for ${labelFor(suggestion.carrierId)}`}
+                onClick={() => openTune(suggestion.carrierId)}
               >
-                Apply
+                <Icon name="tune" size={18} />
+                Choose myself
               </button>
-            )}
-            <button
-              type="button"
-              className="btn--ghost"
-              aria-label={`Choose a frequency for ${labelFor(suggestion.carrierId)}`}
-              onClick={() => openTune(suggestion.carrierId)}
-            >
-              Choose myself
-            </button>
+            </div>
           </li>
         ))}
       </ul>
