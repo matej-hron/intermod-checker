@@ -1,3 +1,4 @@
+import { Icon } from './Icon';
 import type { ViewName } from '../state/viewStore';
 
 const VIEWS: { id: ViewName; label: string }[] = [
@@ -23,6 +24,11 @@ export function Nav({
           aria-current={view === v.id ? 'page' : undefined}
           onClick={() => onNavigate(v.id)}
         >
+          <Icon
+            name={v.id === 'setup' ? 'project' : v.id === 'results' ? 'analyse' : 'tune'}
+            size={18}
+            className="nav__icon"
+          />
           {v.label}
         </button>
       ))}

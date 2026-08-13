@@ -1,6 +1,7 @@
 import { useProjectStore } from '../state/projectStore';
 import { useAnalysisStore } from '../state/analysisStore';
 import type { ViewName } from '../state/viewStore';
+import { Icon } from './Icon';
 
 export function ActionBar({
   onNavigate,
@@ -30,7 +31,9 @@ export function ActionBar({
           }}
           disabled={running}
         >
-          Analyse
+          <Icon name="analyse" size={20} className="action-bar__icon" />
+          <span className="action-bar__label-long">Analyse frequencies</span>
+          <span className="action-bar__label-short">Analyse</span>
         </button>
 
         {running && (

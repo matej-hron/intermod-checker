@@ -13,6 +13,30 @@ const WIDTHS = [
   { name: 'desktop', width: 1280, height: 900 },
 ];
 
+async function populateCarriers(page) {
+  for (let i = 0; i < 4; i++) {
+    const n = await page.locator('.carrier').count();
+    if (n >= 4) break;
+    await page.getByRole('button', { name: 'Add frequency' }).click();
+    await page.getByRole('dialog', { name: /Edit / }).waitFor();
+    await page.getByRole('button', { name: 'Done', exact: true }).click();
+    await page.getByRole('dialog', { name: /Edit / }).waitFor({ state: 'hidden' });
+  }
+
+  const freqs = ['500.000', '500.250', '500.500', '501.000'];
+  const rows = page.locator('.carrier__open');
+  for (let i = 0; i < freqs.length; i++) {
+    await rows.nth(i).click();
+    const dialog = page.getByRole('dialog', { name: /Edit / });
+    await dialog.waitFor();
+    const input = dialog.getByLabel(/Frequency for .* in megahertz/);
+    await input.fill(freqs[i]);
+    await input.blur();
+    await dialog.getByRole('button', { name: 'Done', exact: true }).click();
+    await dialog.waitFor({ state: 'hidden' });
+  }
+}
+
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome' });
   let failures = 0;
@@ -24,27 +48,15 @@ const WIDTHS = [
     await page.goto(TARGET, { waitUntil: 'networkidle' });
 
     // Seed: add carriers and set colliding frequencies so Tune has data.
-    for (let i = 0; i < 6; i++) {
-      const n = await page.locator('.carrier').count();
-      if (n >= 4) break;
-      await page.getByRole('button', { name: 'Add frequency' }).click();
-    }
-    const freqs = ['500.000', '500.250', '500.500', '501.000'];
-    const inputs = page.locator('.carrier__freq input');
-    const cnt = await inputs.count();
-    for (let i = 0; i < Math.min(cnt, freqs.length); i++) {
-      await inputs.nth(i).fill(freqs[i]);
-      await inputs.nth(i).blur();
-    }
+    await populateCarriers(page);
     await page.getByRole('button', { name: 'Analyse' }).click();
     await page.waitForTimeout(2500);
 
     for (const view of ['Setup', 'Results', 'Tune']) {
       if (view === 'Tune') {
-        await page.getByRole('button', { name: 'Setup', exact: true }).click();
-        const tuneBtns = page.getByRole('button', { name: /^Tune / });
-        if (await tuneBtns.count() > 0) await tuneBtns.first().click();
-        else await page.getByRole('button', { name: 'Tune', exact: true }).click();
+        await page.getByRole('button', { name: 'Tune', exact: true }).click();
+        const chips = page.locator('.context-chip');
+        if ((await chips.count()) > 0) await chips.first().click();
         await page.waitForTimeout(2500);
       } else {
         await page.getByRole('button', { name: view, exact: true }).click();

@@ -47,6 +47,11 @@ large tap targets — defaulting to the clear ones, with the nearest clear
 frequency pinned at the top. From 768 px the same views expand: the tabs move
 to the top and Tune shows the full scored matrix.
 
+The Field Notebook interface uses warm paper surfaces, high-contrast field
+labels, and tabular frequency typography. Verdicts always combine colour with
+text and shape, and the complete interface supports light and dark mode without
+loading remote fonts or icons.
+
 ## The Setup screen
 
 Each microphone appears as a compact two-line row showing its name, frequency,

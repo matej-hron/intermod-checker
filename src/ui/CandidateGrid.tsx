@@ -48,81 +48,93 @@ export function CandidateGrid({ carrier }: { carrier: Carrier }) {
       )}
 
       <div className="grid-scroll">
-      <table className="candidate-grid">
-        <caption className="visually-hidden">
-          Candidate frequencies for {carrier.label}, each rated against every
-          interference test.
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Frequency (MHz)</th>
-            <th scope="col">Δ kHz</th>
-            <th scope="col" title={criterionLabel(SPACING_CRITERION)}>
-              Spacing
-            </th>
-            {showExclusion && (
-              <th scope="col" title={criterionLabel(EXCLUSION_CRITERION)}>
-                Excl.
+        <table className="candidate-grid">
+          <caption className="visually-hidden">
+            Candidate frequencies for {carrier.label}, each rated against every
+            interference test.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">
+                <span className="candidate-grid__heading">
+                  <span>Frequency</span>
+                  <span className="candidate-grid__unit">(MHz)</span>
+                </span>
               </th>
-            )}
-            {criteria.map((key) => (
-              <th key={key} scope="col" title={criterionLabel(key)}>
-                {key.replace('O', '')}
+              <th scope="col">
+                <span className="candidate-grid__heading">
+                  <span>Δ</span>
+                  <span className="candidate-grid__unit">kHz</span>
+                </span>
               </th>
-            ))}
-            <th scope="col">Verdict</th>
-          </tr>
-        </thead>
-        <tbody>
-          {evaluations.map((evaluation) => {
-            const isCurrent = evaluation.freqKHz === currentKHz;
-            const isBest = evaluation.freqKHz === nearestClear;
-            const classes = ['candidate-row'];
-            if (isCurrent) classes.push('candidate-row--current');
-            if (isBest) classes.push('candidate-row--best');
-
-            return (
-              <tr key={evaluation.freqKHz} className={classes.join(' ')}>
-                <th scope="row">
-                  <button
-                    type="button"
-                    className="candidate-pick"
-                    disabled={locked || isCurrent}
-                    onClick={() => apply(evaluation.freqKHz)}
-                  >
-                    {kHzToMHzText(evaluation.freqKHz)}
-                  </button>
-                  {isCurrent && <span className="badge">current</span>}
-                  {isBest && <span className="badge badge--good">nearest clear</span>}
+              <th scope="col" title={criterionLabel(SPACING_CRITERION)}>
+                Spacing
+              </th>
+              {showExclusion && (
+                <th scope="col" title={criterionLabel(EXCLUSION_CRITERION)}>
+                  Excl.
                 </th>
-                <td className="num">
-                  {currentKHz === null ? '' : deltaText(evaluation.freqKHz - currentKHz)}
-                </td>
-                <td>
-                  <VerdictDot
-                    verdict={evaluation.verdicts[SPACING_CRITERION]}
-                    criterion={SPACING_CRITERION}
-                  />
-                </td>
-                {showExclusion && (
+              )}
+              {criteria.map((key) => (
+                <th key={key} scope="col" title={criterionLabel(key)}>
+                  {key.replace('O', '')}
+                </th>
+              ))}
+              <th scope="col">Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            {evaluations.map((evaluation) => {
+              const isCurrent = evaluation.freqKHz === currentKHz;
+              const isBest = evaluation.freqKHz === nearestClear;
+              const classes = ['candidate-row'];
+              if (isCurrent) classes.push('candidate-row--current');
+              if (isBest) classes.push('candidate-row--best');
+              if (evaluation.worst === 'near') classes.push('candidate-row--near');
+              if (evaluation.worst === 'exact') classes.push('candidate-row--exact');
+
+              return (
+                <tr key={evaluation.freqKHz} className={classes.join(' ')}>
+                  <th scope="row">
+                    <button
+                      type="button"
+                      className="candidate-pick"
+                      disabled={locked || isCurrent}
+                      onClick={() => apply(evaluation.freqKHz)}
+                    >
+                      {kHzToMHzText(evaluation.freqKHz)}
+                    </button>
+                    {isCurrent && <span className="badge">current</span>}
+                    {isBest && <span className="badge badge--good">nearest clear</span>}
+                  </th>
+                  <td className="num">
+                    {currentKHz === null ? '' : deltaText(evaluation.freqKHz - currentKHz)}
+                  </td>
                   <td>
                     <VerdictDot
-                      verdict={evaluation.verdicts[EXCLUSION_CRITERION]}
-                      criterion={EXCLUSION_CRITERION}
+                      verdict={evaluation.verdicts[SPACING_CRITERION]}
+                      criterion={SPACING_CRITERION}
                     />
                   </td>
-                )}
-                {criteria.map((key) => (
-                  <td key={key}>
-                    <VerdictDot verdict={evaluation.verdicts[key]} criterion={key} />
-                  </td>
-                ))}
-                <td>{explanationText(evaluation.explanation)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  {showExclusion && (
+                    <td>
+                      <VerdictDot
+                        verdict={evaluation.verdicts[EXCLUSION_CRITERION]}
+                        criterion={EXCLUSION_CRITERION}
+                      />
+                    </td>
+                  )}
+                  {criteria.map((key) => (
+                    <td key={key}>
+                      <VerdictDot verdict={evaluation.verdicts[key]} criterion={key} />
+                    </td>
+                  ))}
+                  <td>{explanationText(evaluation.explanation)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </>
   );
