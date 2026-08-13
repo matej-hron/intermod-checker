@@ -50,6 +50,7 @@ export function SuggestionPanel() {
                 <em>{suggestion.failureReason}</em>
               ) : (
                 <>
+                  <span className="visually-hidden"> to </span>
                   <strong className="suggestion__to">
                     {kHzToMHzText(suggestion.toKHz)} MHz
                   </strong>{' '}

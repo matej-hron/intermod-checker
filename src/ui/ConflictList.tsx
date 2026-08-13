@@ -24,6 +24,12 @@ const SEVERITY_WEIGHT: Record<Severity, number> = {
   low: 1,
 };
 
+const SEVERITY_TEXT: Record<Severity, string> = {
+  high: 'High severity',
+  medium: 'Medium severity',
+  low: 'Low severity',
+};
+
 function worseHit(current: Hit | null, hit: Hit): Hit {
   if (current === null) return hit;
   return SEVERITY_WEIGHT[hit.severity] > SEVERITY_WEIGHT[current.severity]
@@ -35,6 +41,9 @@ function HitRow({ hit, labels }: { hit: Hit; labels: readonly string[] }) {
   return (
     <li className={`conflict conflict--${hit.severity}`}>
       <div className="conflict__head">
+        <span className={`badge badge--${hit.severity}`}>
+          {SEVERITY_TEXT[hit.severity]}
+        </span>
         <span className={`badge badge--${hit.severity}`}>
           order {hit.product.order}
         </span>
@@ -88,11 +97,19 @@ export function ConflictList() {
               <div className="conflict__head">
                 <button
                   type="button"
+                  className="conflict__summary"
                   aria-expanded={isOpen}
                   onClick={() => setExpanded(isOpen ? null : carrier.id)}
                 >
-                  {carrier.label} — {kHzToMHzText(carrier.freqKHz)} MHz —{' '}
-                  {hits.length === 0 ? 'clear' : `${hits.length} product(s)`}
+                  <span>
+                    {carrier.label} — {kHzToMHzText(carrier.freqKHz)} MHz —{' '}
+                    {hits.length === 0 ? 'clear' : `${hits.length} product(s)`}
+                  </span>
+                  {worst !== null && (
+                    <span className={`badge badge--${worst.severity}`}>
+                      {SEVERITY_TEXT[worst.severity]}
+                    </span>
+                  )}
                 </button>
               </div>
               {isOpen && hits.length > 0 && (

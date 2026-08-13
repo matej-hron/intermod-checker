@@ -714,6 +714,12 @@
   font-weight: 600;
   text-align: left;
 }
+.conflict__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
 .conflict__head > button:hover:not(:disabled) { background: none; }
 .conflict__detail {
   margin-top: 0;
