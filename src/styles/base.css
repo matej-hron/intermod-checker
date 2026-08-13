@@ -216,7 +216,7 @@ input[type='checkbox'] {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
-  padding-bottom: calc(var(--tap) * 2 + var(--space-4) + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--mobile-fixed-bottom) + env(safe-area-inset-bottom));
 }
 
 .app__main {

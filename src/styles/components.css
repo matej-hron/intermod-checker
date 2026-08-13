@@ -217,7 +217,7 @@
 
 .action-bar {
   position: fixed;
-  inset: auto 0 calc(var(--tap) + env(safe-area-inset-bottom)) 0;
+  inset: auto 0 calc(var(--nav-rail-height) + env(safe-area-inset-bottom)) 0;
   z-index: 19;
   padding: var(--space-2) var(--space-4);
   background: var(--paper-raised);
@@ -1074,7 +1074,7 @@
 .update-prompt {
   position: fixed;
   inset: auto var(--space-4)
-    calc(var(--tap) * 2 + var(--space-4) + env(safe-area-inset-bottom)) var(--space-4);
+    calc(var(--mobile-fixed-bottom) + env(safe-area-inset-bottom)) var(--space-4);
   z-index: 30;
   display: flex;
   flex-wrap: wrap;
@@ -1137,10 +1137,9 @@
   position: fixed;
   left: var(--space-3);
   right: var(--space-3);
-  /* The nav is --tap tall at the very bottom; the action bar sits directly on
-     top of it and is roughly another --tap plus its own padding. Clearing both
-     keeps Undo reachable without covering Analyse. */
-  bottom: calc(var(--tap) * 2 + var(--space-4) + env(safe-area-inset-bottom));
+  /* Clear the full phone stack: the bottom nav includes its own padding on top
+     of the 44 px tap target, and Analyse sits above it in a second fixed rail. */
+  bottom: calc(var(--mobile-fixed-bottom) + env(safe-area-inset-bottom));
   z-index: 20;
   display: flex;
   align-items: center;
@@ -1166,6 +1165,16 @@
   font-weight: 600;
   text-decoration: underline;
 }
+
+@media (min-width: 48rem) {
+  .undo-bar {
+    left: auto;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    max-width: 24rem;
+  }
+}
+
 .live-check {
   display: grid;
   gap: var(--space-3);

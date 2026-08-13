@@ -15,6 +15,9 @@
   --tap: 2.75rem;
   --shadow-offset: 4px;
   --motion-fast: 160ms;
+  --nav-rail-height: calc(var(--tap) + (var(--space-2) * 4) + 0.15rem);
+  --action-rail-height: calc(var(--tap) + (var(--space-2) * 2));
+  --mobile-fixed-bottom: calc(var(--nav-rail-height) + var(--action-rail-height));
 
   --font-display: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia,
     serif;
