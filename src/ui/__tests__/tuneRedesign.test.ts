@@ -76,5 +76,20 @@ describe('Task 5 tune redesign source', () => {
     expect(source).toContain('.candidate-row--exact');
     expect(source).toContain('.candidate-grid__heading');
     expect(source).toContain('.candidate-grid thead th');
+    expect(source).toContain('.segmented__option {');
+    expect(source).toContain('min-height: var(--tap);');
+    expect(source).not.toContain('min-height: calc(var(--tap) - 0.25rem);');
+  });
+
+  it('reuses the redesigned tune heading in the empty state', () => {
+    const source = read('ui/TuneView.tsx');
+
+    expect(source).toContain("if (carriers.length === 0) {");
+    expect(source).toContain('{heading}');
+    expect(source).toContain('<span className="eyebrow">Frequency field guide</span>');
+    expect(source).toContain('<h2 className="tune-heading">');
+    expect(source).toContain('<Icon name="tune" size={18} className="tune-heading__icon" />');
+    expect(source).toContain('<p className="hint">Add some frequencies first.</p>');
+    expect(source).not.toContain('<h2>Tune</h2>');
   });
 });

@@ -24,6 +24,17 @@ export function TuneView() {
 
   const carrier = carriers.find((c) => c.id === carrierId) ?? null;
   const wide = useMediaQuery('(min-width: 48rem)');
+  const heading = (
+    <div className="panel__heading">
+      <div>
+        <span className="eyebrow">Frequency field guide</span>
+        <h2 className="tune-heading">
+          <Icon name="tune" size={18} className="tune-heading__icon" />
+          Tune
+        </h2>
+      </div>
+    </div>
+  );
 
   // Re-evaluate whenever there is a selection but no results — which is the
   // state `select()` leaves behind, and the one `projectStore.update()` leaves
@@ -43,7 +54,7 @@ export function TuneView() {
   if (carriers.length === 0) {
     return (
       <section className="panel">
-        <h2>Tune</h2>
+        {heading}
         <p className="hint">Add some frequencies first.</p>
       </section>
     );
@@ -51,15 +62,7 @@ export function TuneView() {
 
   return (
     <section className="panel">
-      <div className="panel__heading">
-        <div>
-          <span className="eyebrow">Frequency field guide</span>
-          <h2 className="tune-heading">
-            <Icon name="tune" size={18} className="tune-heading__icon" />
-            Tune
-          </h2>
-        </div>
-      </div>
+      {heading}
       <div className="tune-context">
         <div className="tune-context__item">
           <span className="tune-context__label">Carrier</span>
