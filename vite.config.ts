@@ -3,9 +3,8 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// GitHub Pages serves a project site from /<repo>/, so assets must be
-// requested from that subpath. Local dev and preview stay at the root.
-const base = process.env.GITHUB_PAGES === 'true' ? '/intermod-checker/' : '/'
+// The GitHub Pages site is served from the custom domain root.
+const base = '/'
 
 export default defineConfig({
   base,
