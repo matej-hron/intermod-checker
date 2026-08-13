@@ -36,7 +36,15 @@ export function ContextStrip() {
               onClick={() => select(carrier.id)}
             >
               <span className="context-chip__label">{carrier.label}</span>
-              <span className="context-chip__freq">{kHzToMHzText(carrier.freqKHz)}</span>
+              <span className="context-chip__freq">{kHzToMHzText(carrier.freqKHz)} MHz</span>
+              <span className="context-chip__meta">
+                <span className="context-chip__stamp">
+                  {carrier.locked ? 'Locked' : 'Unlocked'}
+                </span>
+                <span className="context-chip__stamp">
+                  {state === 'conflict' ? 'Conflict' : state === 'clear' ? 'Clear' : 'Pending'}
+                </span>
+              </span>
               <span className="context-chip__state">
                 {carrier.locked ? 'locked, ' : ''}
                 {state === 'conflict' ? 'conflict' : state === 'clear' ? 'clear' : 'not analysed'}

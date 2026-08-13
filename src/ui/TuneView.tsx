@@ -5,6 +5,7 @@ import { useTuneStore } from '../state/tuneStore';
 import { CandidateGrid } from './CandidateGrid';
 import { CandidateList } from './CandidateList';
 import { ContextStrip } from './ContextStrip';
+import { Icon } from './Icon';
 import { useMediaQuery } from './useMediaQuery';
 
 export function TuneView() {
@@ -50,19 +51,35 @@ export function TuneView() {
 
   return (
     <section className="panel">
-      <h2>Tune</h2>
+      <div className="panel__heading">
+        <div>
+          <span className="eyebrow">Frequency field guide</span>
+          <h2 className="tune-heading">
+            <Icon name="tune" size={18} className="tune-heading__icon" />
+            Tune
+          </h2>
+        </div>
+      </div>
+      <div className="tune-context">
+        <div className="tune-context__item">
+          <span className="tune-context__label">Carrier</span>
+          <strong>{carrier?.label ?? 'Pick a transmitter'}</strong>
+        </div>
+        <div className="tune-context__item">
+          <span className="tune-context__label">Current</span>
+          <strong>{carrier ? `${kHzToMHzText(carrier.freqKHz)} MHz` : '—'}</strong>
+        </div>
+        <div className="tune-context__item">
+          <span className="tune-context__label">Search width</span>
+          <strong>±{kHzToMHzText(halfWidthKHz)} MHz</strong>
+        </div>
+      </div>
       <ContextStrip />
 
       {carrier === null ? (
         <p className="hint">Pick a transmitter above to see the frequencies available to it.</p>
       ) : (
         <>
-          <p>
-            Tuning <strong>{carrier.label}</strong>, currently{' '}
-            <strong>{kHzToMHzText(carrier.freqKHz)} MHz</strong>. Showing ±
-            {kHzToMHzText(halfWidthKHz)} MHz.
-          </p>
-
           {carrier.locked && (
             <p className="hint">
               This transmitter is locked, so choosing a frequency here will not

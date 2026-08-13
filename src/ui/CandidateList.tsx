@@ -5,6 +5,7 @@ import {
   filterEvaluations,
   type CandidateFilter,
 } from './candidateModel';
+import { Icon } from './Icon';
 import { useCandidateModel } from './useCandidateModel';
 
 // The worst verdict is a summary across every criterion, so it is rendered
@@ -49,20 +50,23 @@ export function CandidateList({ carrier }: { carrier: Carrier }) {
     <>
       {nearestClear !== null && (
         <div className="pinned">
-          <div>
+          <div className="pinned__content">
             <span className="hint">Nearest clear</span>
             <strong className="pinned__freq">{kHzToMHzText(nearestClear)} MHz</strong>
             {currentKHz !== null && (
-              <span className="hint"> ({deltaText(nearestClear - currentKHz)} kHz)</span>
+              <span className="hint pinned__delta">
+                ({deltaText(nearestClear - currentKHz)} kHz)
+              </span>
             )}
           </div>
           <button
             type="button"
-            className="btn--primary"
+            className="btn--primary pinned__action"
             disabled={locked}
             onClick={() => apply(nearestClear)}
           >
-            Use it
+            <Icon name="tune" size={18} />
+            Apply frequency
           </button>
         </div>
       )}
@@ -99,6 +103,8 @@ export function CandidateList({ carrier }: { carrier: Carrier }) {
           const classes = ['candidate'];
           if (isCurrent) classes.push('candidate--current');
           if (isBest) classes.push('candidate--best');
+          if (evaluation.worst === 'near') classes.push('candidate--near');
+          if (evaluation.worst === 'exact') classes.push('candidate--exact');
 
           return (
             <li key={evaluation.freqKHz} className={classes.join(' ')}>
