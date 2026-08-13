@@ -81,6 +81,7 @@
   position: sticky;
   top: 0;
   z-index: 15;
+  min-height: var(--app-bar-height);
   padding: var(--space-3) var(--space-4);
   padding-top: calc(var(--space-3) + env(safe-area-inset-top));
   background: var(--forest);
@@ -102,6 +103,7 @@
 }
 .app-brand__title {
   color: inherit;
+  line-height: var(--app-bar-title-line);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -109,6 +111,7 @@
 .app-brand__descriptor {
   color: color-mix(in srgb, var(--paper) 72%, var(--forest));
   font-size: var(--text-sm);
+  line-height: var(--app-bar-descriptor-line);
   letter-spacing: 0.03em;
 }
 .app-bar .badge,
@@ -878,7 +881,7 @@
 
 .pinned {
   position: sticky;
-  top: calc(var(--tap) + var(--space-4));
+  top: calc(var(--app-bar-height) + var(--space-2));
   z-index: 10;
   display: flex;
   align-items: center;
@@ -1071,10 +1074,20 @@
   box-shadow: var(--shadow);
 }
 
+@media (min-width: 48rem) {
+  .grid-scroll {
+    max-height: min(60vh, 40rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+}
+
 .update-prompt {
   position: fixed;
-  inset: auto var(--space-4)
-    calc(var(--mobile-fixed-bottom) + env(safe-area-inset-bottom)) var(--space-4);
+  right: var(--space-4);
+  bottom: var(--mobile-update-bottom);
+  left: var(--space-4);
   z-index: 30;
   display: flex;
   flex-wrap: wrap;
@@ -1139,11 +1152,10 @@
   position: fixed;
   left: var(--space-3);
   right: var(--space-3);
-  /* Clear the full phone stack: the bottom nav includes its own padding on top
-     of the 44 px tap target, and Analyse sits above it in a second fixed rail. */
-  bottom: calc(var(--mobile-fixed-bottom) + env(safe-area-inset-bottom));
+  bottom: var(--mobile-prompt-bottom);
   z-index: 20;
   display: flex;
+  min-height: var(--mobile-undo-bar-height);
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
@@ -1223,7 +1235,7 @@
 .about__trigger {
   padding: 0;
   margin-top: var(--space-2);
-  color: var(--accent);
+  color: var(--link);
   text-decoration: underline;
 }
 .about__heading {
@@ -1244,5 +1256,5 @@
   display: inline-flex;
   align-items: center;
   min-height: var(--tap);
-  color: var(--accent);
+  color: var(--link);
 }

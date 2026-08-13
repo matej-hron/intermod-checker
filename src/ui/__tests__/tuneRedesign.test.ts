@@ -63,8 +63,16 @@ describe('Task 5 tune redesign source', () => {
   });
 
   it('adds the field-guide styling hooks to components.css', () => {
+    const tokens = read('styles/tokens.css');
     const source = read('styles/components.css');
 
+    expect(tokens).toContain('--app-bar-title-line:');
+    expect(tokens).toContain('--app-bar-descriptor-line:');
+    expect(tokens).toContain('--app-bar-height:');
+    expect(source).toContain('min-height: var(--app-bar-height);');
+    expect(source).toContain('line-height: var(--app-bar-title-line);');
+    expect(source).toContain('line-height: var(--app-bar-descriptor-line);');
+    expect(source).toContain('top: calc(var(--app-bar-height) + var(--space-2));');
     expect(source).toContain('.tune-context');
     expect(source).toContain('.tune-context__item');
     expect(source).toContain('.context-chip__meta');
@@ -79,6 +87,9 @@ describe('Task 5 tune redesign source', () => {
     expect(source).toContain('.segmented__option {');
     expect(source).toContain('min-height: var(--tap);');
     expect(source).not.toContain('min-height: calc(var(--tap) - 0.25rem);');
+    expect(source).toMatch(
+      /@media \(min-width: 48rem\) \{\s+\.grid-scroll \{\s+max-height: min\(60vh, 40rem\);\s+overflow: auto;\s+overscroll-behavior: contain;\s+scrollbar-gutter: stable;\s+\}\s+\}/,
+    );
   });
 
   it('reuses the redesigned tune heading in the empty state', () => {

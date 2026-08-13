@@ -6,18 +6,25 @@ const root = new URL('../../', import.meta.url);
 const read = (path: string): string => readFileSync(new URL(path, root), 'utf8');
 
 describe('Task 6 fixed prompt layout', () => {
-  it('keeps the mobile undo and update prompts above the fixed action rails', () => {
+  it('stacks the mobile update prompt above a reachable Undo bar and the fixed rails', () => {
+    const tokens = read('styles/tokens.css');
     const source = read('styles/components.css');
 
+    expect(tokens).toContain(
+      '--mobile-undo-bar-height: calc(var(--tap) + (var(--space-2) * 2));',
+    );
+    expect(tokens).toContain('--mobile-prompt-bottom:');
+    expect(tokens).toContain('--mobile-update-bottom:');
+
     expect(source).toContain('.update-prompt {');
-    expect(source).toContain('inset: auto var(--space-4)');
-    expect(source).toContain('calc(var(--mobile-fixed-bottom) + env(safe-area-inset-bottom))');
+    expect(source).toContain('bottom: var(--mobile-update-bottom);');
     expect(source).toContain('z-index: 30;');
 
     expect(source).toContain('.undo-bar {');
     expect(source).toContain('left: var(--space-3);');
     expect(source).toContain('right: var(--space-3);');
-    expect(source).toContain('bottom: calc(var(--mobile-fixed-bottom) + env(safe-area-inset-bottom));');
+    expect(source).toContain('min-height: var(--mobile-undo-bar-height);');
+    expect(source).toContain('bottom: var(--mobile-prompt-bottom);');
     expect(source).toContain('z-index: 20;');
   });
 

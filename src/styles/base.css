@@ -120,21 +120,21 @@ input[type='checkbox'] {
 }
 
 :focus-visible {
-  outline: 2px solid var(--orange);
+  outline: 2px solid var(--focus-outer);
   outline-offset: 3px;
-  box-shadow: none;
+  box-shadow: 0 0 0 2px var(--focus-inner);
 }
 
 .btn--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-contrast);
+  background: var(--action);
+  border-color: var(--action);
+  color: var(--action-contrast);
   font-weight: 600;
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: var(--orange-pressed);
-  border-color: var(--orange-pressed);
+  background: var(--action-pressed);
+  border-color: var(--action-pressed);
 }
 
 .btn--ghost {
@@ -204,7 +204,7 @@ input[type='checkbox'] {
 .badge--medium {
   border-color: color-mix(in srgb, var(--near) 45%, var(--border));
   background: var(--near-bg);
-  color: var(--near);
+  color: var(--near-foreground);
 }
 
 .badge--low {
