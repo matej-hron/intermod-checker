@@ -1089,8 +1089,10 @@
 
 @media (min-width: 48rem) {
   .update-prompt {
-    inset: auto var(--space-4) var(--space-4) auto;
-    max-width: 24rem;
+    right: var(--space-4);
+    left: auto;
+    bottom: var(--space-4);
+    max-width: min(24rem, calc(50vw - var(--space-5)));
   }
 }
 
@@ -1168,10 +1170,10 @@
 
 @media (min-width: 48rem) {
   .undo-bar {
-    left: auto;
-    right: var(--space-4);
+    left: var(--space-4);
+    right: auto;
     bottom: var(--space-4);
-    max-width: 24rem;
+    max-width: min(24rem, calc(50vw - var(--space-5)));
   }
 }
 
