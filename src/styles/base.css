@@ -10,28 +10,49 @@ html {
 
 body {
   margin: 0;
+  min-height: 100svh;
   font: var(--text-base) / 1.5 var(--font);
   color: var(--text);
-  background: var(--surface-sunken);
+  background-color: var(--surface-sunken);
+  background-image: var(--paper-grain);
+  background-size: 13px 13px, 19px 19px, 27px 27px;
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2,
-h3 {
+h3,
+.app-bar__title,
+.app-brand__title,
+.app-title {
   margin: 0;
   color: var(--text);
+  font-family: var(--font-display);
   font-weight: 600;
   line-height: 1.25;
 }
-h1 { font-size: var(--text-xl); }
-h2 { font-size: var(--text-lg); }
-h3 { font-size: var(--text-base); }
-p { margin: 0; }
-ul { margin: 0; }
 
-/* Controls are styled on the bare element so a control can never be shipped
-   below the touch minimum by forgetting a class. */
+h1 {
+  font-size: var(--text-xl);
+}
+
+h2 {
+  font-size: var(--text-lg);
+}
+
+h3 {
+  font-size: var(--text-base);
+}
+
+p {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+}
+
 button,
 input,
 select,
@@ -52,27 +73,39 @@ button {
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  min-height: var(--tap);
   min-width: var(--tap);
+  min-height: var(--tap);
   padding: 0 var(--space-4);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text);
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--surface-raised);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: default;
 }
 
-/* 16px is the threshold below which iOS Safari zooms the viewport on focus. */
 input,
 select,
 textarea {
   min-height: var(--tap);
   padding: 0 var(--space-3);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   font-size: max(1rem, var(--text-base));
@@ -87,9 +120,9 @@ input[type='checkbox'] {
 }
 
 :focus-visible {
-  outline: none;
-  box-shadow: var(--focus);
-  border-radius: var(--radius-sm);
+  outline: 2px solid var(--orange);
+  outline-offset: 3px;
+  box-shadow: none;
 }
 
 .btn--primary {
@@ -99,9 +132,19 @@ input[type='checkbox'] {
   font-weight: 600;
 }
 
+.btn--primary:hover:not(:disabled) {
+  background: var(--orange-pressed);
+  border-color: var(--orange-pressed);
+}
+
 .btn--ghost {
-  border-color: transparent;
-  background: transparent;
+  background: color-mix(in srgb, var(--forest) 6%, var(--surface));
+  border-color: var(--forest);
+  color: var(--forest);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--forest) 10%, var(--surface));
 }
 
 .visually-hidden {
@@ -127,28 +170,53 @@ input[type='checkbox'] {
 }
 
 .badge {
-  display: inline-block;
-  padding: 0.1rem var(--space-2);
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.15rem var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--text-muted);
   font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.badge--bad {
+  border-color: color-mix(in srgb, var(--exact) 45%, var(--border));
+  background: var(--exact-bg);
+  color: var(--exact);
+}
+
+.badge--good {
+  border-color: color-mix(in srgb, var(--clear) 45%, var(--border));
+  background: var(--clear-bg);
+  color: var(--clear);
+}
+
+.badge--high {
+  border-color: color-mix(in srgb, var(--exact) 45%, var(--border));
+  background: var(--exact-bg);
+  color: var(--exact);
+}
+
+.badge--medium {
+  border-color: color-mix(in srgb, var(--near) 45%, var(--border));
+  background: var(--near-bg);
+  color: var(--near);
+}
+
+.badge--low {
   background: var(--surface-sunken);
   color: var(--text-muted);
 }
-.badge--bad { background: var(--exact-bg); color: var(--exact); }
-.badge--good { background: var(--clear-bg); color: var(--clear); }
-.badge--high { background: var(--exact-bg); color: var(--exact); }
-.badge--medium { background: var(--near-bg); color: var(--near); }
-.badge--low { background: var(--surface-sunken); color: var(--text-muted); }
 
-/* The shell. The bottom padding clears the fixed action bar and navigation on
-   phones; from 48rem both are static and the reservation is dropped. */
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
-  padding-bottom: calc(
-    var(--tap) * 2 + var(--space-4) + env(safe-area-inset-bottom)
-  );
+  padding-bottom: calc(var(--tap) * 2 + var(--space-4) + env(safe-area-inset-bottom));
 }
 
 .app__main {
@@ -187,5 +255,16 @@ input[type='checkbox'] {
   .app__bar {
     max-width: 64rem;
     margin-inline: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
